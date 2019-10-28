@@ -83,9 +83,6 @@ object fmMain: TfmMain
       ReadOnly = True
       ScrollBars = ssBoth
       TabOrder = 3
-      ExplicitLeft = -3
-      ExplicitTop = 48
-      ExplicitHeight = 295
     end
     object btnExit: TButton
       Left = 1
@@ -121,8 +118,6 @@ object fmMain: TfmMain
       Items.Strings = (
         #1052#1077#1090#1088#1080#1082#1072' '#1061#1086#1083#1089#1090#1077#1076#1072
         #1052#1077#1090#1088#1080#1082#1080' '#1044#1078#1080#1083#1073#1072)
-      ExplicitLeft = -3
-      ExplicitTop = 416
     end
     object pnlmode: TPanel
       Left = 1
@@ -138,8 +133,6 @@ object fmMain: TfmMain
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 6
-      ExplicitLeft = -3
-      ExplicitTop = 343
     end
   end
   object pnlcodebox: TPanel

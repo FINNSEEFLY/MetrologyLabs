@@ -24,7 +24,8 @@ Const
   COMEXP = '(\/\*[\s\S]*?(.*)\*\/)|(\/\/.*)';
   OPERATOREXP =
     //'([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|break|continue|switch|case|;|{|\[|\,|\.';
-    '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|\+\=|\-\=|\*\=|\/\=|\%\=|\.\.|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\.';
+    //'([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|\+\=|\-\=|\*\=|\/\=|\%\=|\.\.|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\.';
+      '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+\=|\-\=|\*\=|\/\=|\%\=|\.\.|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\.';
   KEYWORDEXP = ('\b(def|double|int|float|byte|short|long|char|boolean|string|else|void|static|register|String|const|new|[\s\w]*\([\w\s,]*\)'')\b');
   STRINGEXP = '("[^"]*")|(''[^'']*'')';
   OPERANDEXP =
@@ -34,6 +35,7 @@ Const
 Var
   OPERATORS: TOperators;
   OPERANDS: TOperands;
+  jOPERATORS: TOperators;
 
 Procedure AddToOperators(var OPERATORS: TOperators; const lexeme: string);
 
