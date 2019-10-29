@@ -79,7 +79,7 @@ begin
         end;
         setlength(OPERATORS, 0);
         setlength(OPERANDS, 0);
-        AnalizeCode(temp, OPERATORS, OPERANDS);
+        hAnalizeCode(temp, OPERATORS, OPERANDS);
         mmResults.Lines.Clear;
         mmResults.Lines.Add('Словарь операторов равен ' +
           inttostr(length(OPERATORS)));
@@ -133,6 +133,14 @@ begin
         begin
           temp := temp + mmCode.Lines.Strings[i] + #13#10;
         end;
+        jAnalizeCode(temp, absOPERATORS, alloperators);
+        mmResults.Lines.Clear;
+        mmResults.Lines.Add('Количество условных операторов ' +
+          inttostr(OperatorsCount(absOPERATORS)));
+        mmResults.Lines.Add('Общее количество операторов ' +
+          inttostr(OperatorsCount(alloperators)));
+        mmResults.Lines.Add('Относительная сложность ' +
+          floattostr(OperatorsCount(absOPERATORS)/OperatorsCount(alloperators)));
       end;
   end;
 

@@ -25,24 +25,32 @@ Const
   OPERATOREXP =
     //'([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|break|continue|switch|case|;|{|\[|\,|\.';
     //'([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|\+\=|\-\=|\*\=|\/\=|\%\=|\.\.|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\.';
-      '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+\=|\-\=|\*\=|\/\=|\%\=|\.\.|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\(|\.';
-  KEYWORDEXP = ('\b(def|double|int|float|byte|short|long|char|boolean|string|else|void|static|register|String|const|new|[\s\w]*\([\w\s,]*\)'')\b');
+      '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|'+
+      '\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\(|\.';
+  KEYWORDEXP = ('\b(def|double|int|float|byte|short|long|char|boolean|string|else|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
   STRINGEXP = '("[^"]*")|(''[^'']*'')';
   OPERANDEXP =
     //'(?<!\\)(([a-zA-Z0-9][a-zA-z0-9_$]*)+\.?)*(([a-zA-Z0-9][a-zA-z0-9_$]*)+?)+';
     '\b[^() }{[\]]*\b';
   FUNCTIONDEF = '\b(def|double|int|float|byte|short|long|char|boolean|string|void)[ ]{0,}[a-zA-Z1-9]{1,}\({1,}.*\)';
+
+  absOPERATOR = '(\b(for|if|while|case)\b)|\?';
+  {Без фигурных скобок}
+  allOPERATOR = '\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|\[|\,|\(|\.';
 Var
   OPERATORS: TOperators;
   OPERANDS: TOperands;
-  jOPERATORS: TOperators;
+  absOPERATORS, allOPERATORS: TOperators;
 
 Procedure AddToOperators(var OPERATORS: TOperators; const lexeme: string);
 
 Procedure AddToOperands(var OPERANDS: TOperands; const lexeme: string);
 
-Procedure AnalizeCode(var text: string; var OPERATORS: TOperators;
+Procedure hAnalizeCode(var text: string; var OPERATORS: TOperators;
   var OPERANDS: TOperands);
+
+Procedure jAnalizeCode(var text: string; var absOPERATORS: TOperators;
+  var allOPERATORS: TOperators);
 
 function OperatorsCount(const OPERATORS: TOperators): integer;
 
@@ -230,6 +238,10 @@ begin
       begin
         strbuf := strbuf + '}';
       end;
+      if '?' = strbuf then
+      begin
+        strbuf := strbuf + ':';
+      end;
       if strbuf = 'do' then
       begin
         strbuf := strbuf + '...while';
@@ -254,7 +266,90 @@ begin
   end;
 end;
 
-Procedure AnalizeCode(var text: string; var OPERATORS: TOperators;
+Procedure jabsFindOperators(text: string; var OPERATORS: TOperators);
+var
+  _regexp: TRegEx;
+  temp: TMatchCollection;
+  i: integer;
+  j: integer;
+  strbuf: string;
+  flag: boolean;
+begin
+_regexp := TRegEx.Create(absOPERATOR);
+  temp := _regexp.Matches(text);
+  text := _regexp.Replace(text, ' ');
+  for i := 0 to temp.Count - 1 do
+  begin
+    flag := false;
+    j := 0;
+    while (j < length(OPERATORS)) and (not(flag)) do
+    begin
+      strbuf := temp.Item[i].Value;
+      if '?' = strbuf then
+      begin
+        strbuf := strbuf + ':';
+      end;
+      if strbuf = OPERATORS[j].Operator then
+      begin
+        flag := true;
+        OPERATORS[j].Used := OPERATORS[j].Used + 1;
+      end;
+      j := j + 1;
+    end;
+    if not(flag) then
+      AddToOperators(OPERATORS, strbuf);
+  end;
+end;
+
+Procedure jallFindOperators(var text: string; var OPERATORS: TOperators);
+var
+  _regexp: TRegEx;
+  temp: TMatchCollection;
+  i: integer;
+  j: integer;
+  strbuf: string;
+  flag: boolean;
+begin
+  _regexp := TRegEx.Create(allOPERATOR);
+  temp := _regexp.Matches(text);
+  text := _regexp.Replace(text, ' ');
+  for i := 0 to temp.Count - 1 do
+  begin
+    flag := false;
+    j := 0;
+    while (j < length(OPERATORS)) and (not(flag)) do
+    begin
+      strbuf := temp.Item[i].Value;
+
+      if '{' = strbuf then
+      begin
+        strbuf := strbuf + '}';
+      end;
+      if '?' = strbuf then
+      begin
+        strbuf := strbuf + ':';
+      end;
+      if strbuf = '[' then
+      begin
+        strbuf := strbuf + ']';
+      end;
+      if strbuf = '(' then
+      begin
+        strbuf := strbuf + ')';
+      end;
+      if strbuf = OPERATORS[j].Operator then
+      begin
+        flag := true;
+        OPERATORS[j].Used := OPERATORS[j].Used + 1;
+      end;
+      j := j + 1;
+    end;
+    if not(flag) then
+      AddToOperators(OPERATORS, strbuf);
+  end;
+end;
+
+Procedure hAnalizeCode(var text: string; var OPERATORS: TOperators;
   var OPERANDS: TOperands);
 begin
   InitOperands(OPERANDS);
@@ -272,6 +367,26 @@ begin
 
   DelOperands(text, OPERANDS);
   //showmessage(text);
+end;
+
+Procedure jAnalizeCode(var text: string; var absOPERATORS: TOperators;
+  var allOPERATORS: TOperators);
+begin
+  InitOperators(absOPERATORS);
+  InitOperators(allOPERATORS);
+  InitOperands(OPERANDS);
+  DelComments(text);
+  Delfunctiondef(text);
+  DelStrings(text, OPERANDS);
+
+
+  DelKeywords(text);
+
+  { Подсчет условных операторов }
+  jabsFindOperators(text,absOPERATORS);
+  { Общее количество операторов }
+  jallFindOperators(text,allOPERATORS);
+  { Максимальный уровень вложенности }
 end;
 
 End.
