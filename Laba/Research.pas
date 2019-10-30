@@ -37,7 +37,19 @@ Const
   absOPERATOR = '(\b(for|if|while|case)\b)|\?';
   {Без фигурных скобок}
   allOPERATOR = '\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|\[|\,|\(|\.';
-Var
+
+  ROLF1 = '\;';
+  ROLF2 = 'if';
+  ROLF3 = 'switch';
+  ROLF4 = 'while';
+  ROLF5 = 'for';
+  ROLF6 = ' ';
+  ROLF7 = '$';
+  ROLF8 = '\?';
+  ROLF9 = 'else';
+  ROLF10 = 'default';
+
+  Var
   OPERATORS: TOperators;
   OPERANDS: TOperands;
   absOPERATORS, allOPERATORS: TOperators;
@@ -387,6 +399,86 @@ begin
   { Общее количество операторов }
   jallFindOperators(text,allOPERATORS);
   { Максимальный уровень вложенности }
+end;
+
+{ Возвращает результат чтения
+  0 - успешное чтение
+  -1 - конец строки
+ numofobf:
+    1: ;
+    2: if
+    3: switch
+    4: while
+    5: for
+    6: ' '
+    7: \n  #13#10
+    8: \?
+    9: else
+   10: default
+   11: sometext
+               
+}
+Function ReadOneLexeme(var text:string; var numofobj:integer;  var nos:integer):integer;
+var
+  i:integer;
+  fl:boolean;
+  resstr:string;
+  _regexp: TRegEx;
+begin
+  fl:=true;
+  resstr:='';
+  i:=1;
+  while (fl) and (nos<=length(text)) do
+  begin
+    resstr:=resstr+text[nos];
+    inc(nos);
+    if (_regexp.IsMatch(resstr,ROLF1)) then
+    begin
+      
+    end;
+    if (_regexp.IsMatch(resstr,ROLF2)) then
+    begin
+
+    end;
+    if (_regexp.IsMatch(resstr,ROLF3)) then
+    begin
+
+    end;
+    if (_regexp.IsMatch(resstr,ROLF4)) then
+    begin
+
+    end;
+    if (_regexp.IsMatch(resstr,ROLF5)) then
+    begin
+
+    end;
+    if (_regexp.IsMatch(resstr,ROLF6)) then
+    begin
+
+    end;
+    if (_regexp.IsMatch(resstr,ROLF7)) then
+    begin
+
+    end;
+    if (_regexp.IsMatch(resstr,ROLF8)) then
+    begin
+
+    end;
+    if (_regexp.IsMatch(resstr,ROLF9)) then
+    begin
+
+    end;
+    if (_regexp.IsMatch(resstr,ROLF10)) then
+    begin
+
+    end;
+    
+    
+    
+
+  end;
+
+
 end;
 
 End.

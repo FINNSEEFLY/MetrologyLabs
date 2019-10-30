@@ -139,8 +139,14 @@ begin
           inttostr(OperatorsCount(absOPERATORS)));
         mmResults.Lines.Add('Общее количество операторов ' +
           inttostr(OperatorsCount(alloperators)));
-        mmResults.Lines.Add('Относительная сложность ' +
-          floattostr(OperatorsCount(absOPERATORS)/OperatorsCount(alloperators)));
+        if OperatorsCount(alloperators) <> 0 then
+        begin
+          mmResults.Lines.Add('Относительная сложность ' +
+            floattostr(OperatorsCount(absOPERATORS) /
+            OperatorsCount(alloperators)));
+        end
+        else
+          mmResults.Lines.Add('Относительная сложность 0');
       end;
   end;
 
