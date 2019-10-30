@@ -5,7 +5,7 @@ Interface
 Uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Research, Vcl.Grids,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs,Regularexpressions, Vcl.StdCtrls, Research, Vcl.Grids,
   Vcl.ExtCtrls;
 
 Type
@@ -32,6 +32,7 @@ Type
     { Private declarations }
   public
     { Public declarations }
+    _regexp: TRegEx;
   end;
 
 Var
@@ -68,6 +69,7 @@ var
   pDict: Integer;
   pVol: real;
   buf: Integer;
+  depth:integer;
 begin
   case cmbMode.ItemIndex of
     0:
@@ -133,7 +135,7 @@ begin
         begin
           temp := temp + mmCode.Lines.Strings[i] + #13#10;
         end;
-        jAnalizeCode(temp, absOPERATORS, alloperators);
+        depth:=jAnalizeCode(temp, absOPERATORS, alloperators);
         mmResults.Lines.Clear;
         mmResults.Lines.Add(' оличество условных операторов ' +
           inttostr(OperatorsCount(absOPERATORS)));
@@ -147,6 +149,8 @@ begin
         end
         else
           mmResults.Lines.Add('ќтносительна€ сложность 0');
+        mmResults.Lines.Add('ћаксимальный уровень вложенности условного оператора: ' +
+          inttostr(depth));
       end;
   end;
 
