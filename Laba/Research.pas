@@ -411,7 +411,6 @@ begin
   jabsFindOperators(text, absOPERATORS);
   { Общее количество операторов }
   jallFindOperators(text, allOPERATORS);
-  showmessage(text);
   { Максимальный уровень вложенности }
   result := MNL(text);
 end;
