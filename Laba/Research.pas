@@ -33,7 +33,9 @@ Const
     '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|'
     + '\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\(|\.';
   KEYWORDEXP =
-    ('\b(def|double|int|float|byte|short|long|char|boolean|string|else|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
+    ('\b(def|double|int|else|float|byte|short|long|char|boolean|string|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
+  KEYWORDEXPUPD =
+    ('\b(def|double|int|float|byte|short|long|char|boolean|string|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
   STRINGEXP = '("[^"]*")|(''[^'']*'')';
   OPERANDEXP =
   // '(?<!\\)(([a-zA-Z0-9][a-zA-z0-9_$]*)+\.?)*(([a-zA-Z0-9][a-zA-z0-9_$]*)+?)+';
@@ -49,10 +51,10 @@ Const
   REGW1 = 'if';
   REGW2 = 'for';
   REGW3 = 'else';
-  REGW4 = 'case[ ]*[^:]*:';
+  REGW4 = 'case';
   REGW5 = 'while';
   REGW6 = 'switch';
-  REGW7 = 'default[ ]*:';
+  REGW7 = 'default';
   REGW8 = '\;';
   REGW9 = ' ';
   REGW10 = '\?';
@@ -171,6 +173,14 @@ var
   _regexp: TRegEx;
 begin
   _regexp := TRegEx.Create(KEYWORDEXP);
+  text := _regexp.Replace(text, '');
+end;
+
+Procedure jDelKeywords(var text: string);
+var
+  _regexp: TRegEx;
+begin
+  _regexp := TRegEx.Create(KEYWORDEXPUPD);
   text := _regexp.Replace(text, '');
 end;
 
@@ -405,7 +415,7 @@ begin
   Delfunctiondef(text);
   DelStrings(text, OPERANDS);
 
-  DelKeywords(text);
+  jDelKeywords(text);
 
   { Подсчет условных операторов }
   jabsFindOperators(text, absOPERATORS);
@@ -414,7 +424,6 @@ begin
   { Максимальный уровень вложенности }
   result := MNL(text);
 end;
-
 
 Function ReadOneLexeme(var text: string; var numofobj: integer;
   var nos: integer): string;
@@ -444,7 +453,7 @@ var
   resstr: string;
   _regexp: TRegEx;
   sk: integer;
-  dfl:boolean;
+  dfl: boolean;
 begin
   fl := true;
   resstr := '';
@@ -458,18 +467,18 @@ begin
       numofobj := 1;
       fl := false;
       sk := 0;
-      dfl:=false;
+      dfl := false;
       repeat
         resstr := resstr + text[nos];
         if text[nos] = '(' then
         begin
           inc(sk);
-          dfl:=true;
+          dfl := true;
         end;
         if text[nos] = ')' then
           dec(sk);
         inc(nos);
-      until (sk = 0) and dfl=true;
+      until (sk = 0) and dfl = true;
       result := resstr;
       Continue;
     end;
@@ -478,18 +487,18 @@ begin
       numofobj := 2;
       fl := false;
       sk := 0;
-      dfl:=false;
+      dfl := false;
       repeat
         resstr := resstr + text[nos];
         if text[nos] = '(' then
         begin
           inc(sk);
-          dfl:=true;
+          dfl := true;
         end;
         if text[nos] = ')' then
           dec(sk);
         inc(nos);
-      until (sk = 0) and dfl=true;
+      until (sk = 0) and dfl = true;
       result := resstr;
       Continue;
     end;
@@ -504,6 +513,14 @@ begin
     begin
       numofobj := 4;
       fl := false;
+      dfl := false;
+      while dfl = false do
+      begin
+        resstr := resstr + text[nos];
+        inc(nos);
+        if text[nos - 1] = ':' then
+          dfl := true;
+      end;
       result := resstr;
       Continue;
     end;
@@ -512,18 +529,18 @@ begin
       numofobj := 5;
       fl := false;
       sk := 0;
-      dfl:=false;
+      dfl := false;
       repeat
         resstr := resstr + text[nos];
         if text[nos] = '(' then
         begin
           inc(sk);
-          dfl:=true;
+          dfl := true;
         end;
         if text[nos] = ')' then
           dec(sk);
         inc(nos);
-      until (sk = 0) and dfl=true;
+      until (sk = 0) and dfl = true;
       result := resstr;
       Continue;
     end;
@@ -538,13 +555,13 @@ begin
     begin
       numofobj := 6;
       fl := false;
-      dfl:=false;
-      while dfl=false do
+      dfl := false;
+      while dfl = false do
       begin
-        resstr:=resstr+text[nos];
+        resstr := resstr + text[nos];
         inc(nos);
-        if(text[nos]='{') then
-          dfl:=true;
+        if (text[nos - 1] = '{') then
+          dfl := true;
       end;
       result := resstr;
       Continue;
@@ -553,6 +570,13 @@ begin
     begin
       numofobj := 7;
       fl := false;
+      while dfl = false do
+      begin
+        resstr := resstr + text[nos];
+        inc(nos);
+        if text[nos - 1] = ':' then
+          dfl := true;
+      end;
       result := resstr;
       Continue;
     end;
@@ -572,10 +596,16 @@ begin
       result := resstr;
       Continue;
     end;
-    if ((_regexp.IsMatch(resstr, REGW9)) or (resstr[Length(resstr)]=#0)) then
+    if ((_regexp.IsMatch(resstr, REGW9)) or (resstr[length(resstr)] = #0)) then
     begin
       if length(resstr) = 1 then
       begin
+        while (text[nos] = ' ') or (text[nos] = #0) do
+        begin
+          resstr := resstr + text[nos];
+          inc(nos);
+        end;
+
         numofobj := 9;
       end
       else
@@ -657,7 +687,6 @@ begin
   end;
 end;
 
-
 Function MNL(var text: string): integer;
 { MNL - Maximum Nesting Level }
 {
@@ -691,7 +720,7 @@ var
   wait: boolean;
   Mass: array of TProgress;
   tmpres: integer;
-  str:string;
+  str: string;
 
 begin
   result := 0;
@@ -699,7 +728,7 @@ begin
   while (nos <= length(text)) do
   begin
     numofobj := 0;
-    str:=ReadOneLexeme(text, numofobj, nos);
+    str := ReadOneLexeme(text, numofobj, nos);
     if numofobj = 1 then
     begin
       SetLength(Mass, length(Mass) + 1);
@@ -739,166 +768,210 @@ begin
       Mass[length(Mass) - 1].OBJ := 4;
       Mass[length(Mass) - 1].Status := 1;
     end;
-    if length(Mass) > 0 then
-    begin
-      wait:=true;
-      case Mass[length(Mass) - 1].OBJ of
-        1: { IF }
-          begin
-            case Mass[length(Mass) - 1].Status of
-              1:
-                begin
-                  if numofobj = 12 then
-                    Mass[length(Mass) - 1].Status := 2;
-                  if numofobj = 11 then
-                    Mass[length(Mass) - 1].Status := 3;
-                end;
-              2:
-                begin
-                  if numofobj = 13 then
+    wait := true;
+    repeat
+      if length(Mass) > 0 then
+      begin
+        
+        case Mass[length(Mass) - 1].OBJ of
+          1: { IF }
+            begin
+              case Mass[length(Mass) - 1].Status of
+                1:
                   begin
-                    Mass[length(Mass) - 1].Status := 4;
-                    dec(tmpres);
+                    if numofobj = 12 then
+                      Mass[length(Mass) - 1].Status := 2;
+                    if numofobj = 11 then
+                      Mass[length(Mass) - 1].Status := 3;
+                    wait := true;
                   end;
-                end;
-              3:
-                begin
-                  if (numofobj = 8) or (numofobj = 11) then
+                2:
                   begin
-                    Mass[length(Mass) - 1].Status := 4;
-                    dec(tmpres);
+                    if numofobj = 13 then
+                    begin
+                      Mass[length(Mass) - 1].Status := 4;
+                      dec(tmpres);
+                    end;
+                    wait := true;
                   end;
-                end;
-              4:
-                begin
-                  if numofobj = 15 then
+                3:
                   begin
-                    SetLength(Mass, length(Mass) - 1);
+                    if (numofobj = 8) or (numofobj = 11) then
+                    begin
+                      Mass[length(Mass) - 1].Status := 4;
+                      dec(tmpres);
+                    end;
+                    wait := true;
                   end;
-                  if numofobj = 3 then
-                    Mass[length(Mass) - 1].Status := 5;
-                end;
-              5:
-                begin
-                  inc(tmpres);
-                  if tmpres > result then
-                    result := tmpres;
-                  if numofobj = 12 then
-                    Mass[length(Mass) - 1].Status := 6;
-                  if numofobj = 11 then
-                    Mass[length(Mass) - 1].Status := 7;
-                end;
-              6:
-                begin
-                  if numofobj = 13 then
+                4:
                   begin
-                    SetLength(Mass, length(Mass) - 1);
-                    dec(tmpres);
-                  end;
-                end;
-              7:
-                begin
-                  if (numofobj = 8) or (numofobj = 11) then
-                  begin
-                    SetLength(Mass, length(Mass) - 1);
-                    dec(tmpres);
-                  end;
-                end;
-            end;
-          end;
-        2: { FOR }
-          begin
-            case Mass[length(Mass) - 1].Status of
-              1:
-                begin
-                  if numofobj = 8 then
-                  begin
-                    Mass[length(Mass) - 1].Status := 2;
-                    SetLength(Mass, length(Mass) - 1);
-                    dec(tmpres);
-                  end;
-                  if numofobj = 12 then
-                    Mass[length(Mass) - 1].Status := 3;
-                  if numofobj = 11 then
-                    Mass[length(Mass) - 1].Status := 4;
-                end;
-              3:
-                begin
-                  if numofobj = 13 then
-                  begin
-                    SetLength(Mass, length(Mass) - 1);
-                    dec(tmpres);
-                  end;
-                end;
-              4:
-                begin
-                  if (numofobj = 8) or (numofobj = 11) then
-                  begin
-                    SetLength(Mass, length(Mass) - 1);
-                    dec(tmpres);
-                  end;
-                end;
-            end;
-          end;
-        3: { WHILE }
-          begin
-            case Mass[length(Mass) - 1].Status of
-              1:
-                begin
-                  if numofobj = 12 then
-                    Mass[length(Mass) - 1].Status := 2;
-                  if numofobj = 11 then
-                    Mass[length(Mass) - 1].Status := 3;
-                end;
-              2:
-                begin
-                  if numofobj = 13 then
-                  begin
-                    SetLength(Mass, length(Mass) - 1);
-                    dec(tmpres);
-                  end;
-                end;
-              3:
-                begin
-                  if (numofobj = 8) or (numofobj = 11) then
-                  begin
-                    SetLength(Mass, length(Mass) - 1);
-                    dec(tmpres);
-                  end;
-                end;
-            end;
-          end;
-        4: { SWITCH }
-          begin
-            case Mass[length(Mass) - 1].Status of
-              1:
-                begin
-                  if (numofobj = 4) or (numofobj = 7) then
-                  begin
-                    Mass[length(Mass) - 1].Status := 2;
-                    inc(tmpres);
-                    if tmpres > result then
-                      result := tmpres;
-                  end;
-                  if (numofobj = 13) then
-                  begin
-                    SetLength(Mass, length(Mass) - 1);
-                  end;
+                    if (numofobj in [1,2,4,5,6,7,8,10,12,13,14,15]) then               
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                      wait := false;
+                    end;
+                    if (numofobj = 15) then
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                      wait:=true;
+                    end;
+                    if numofobj = 3 then
+                    begin
+                      Mass[length(Mass) - 1].Status := 5;
+                      wait:=true;
+                    end;
 
-                end;
-              2:
-                begin
-                  if numofobj = 14 then
-                  begin
-                    Mass[length(Mass) - 1].Status := 1;
-                    dec(tmpres);
                   end;
-                end;
+                5:
+                  begin
+
+                    if numofobj = 12 then
+                    begin
+                      inc(tmpres);
+                      if tmpres > result then
+                        result := tmpres;
+                      Mass[length(Mass) - 1].Status := 6;
+                    end;
+                    if numofobj = 11 then
+                    begin
+                      Mass[length(Mass) - 1].Status := 7;
+                      inc(tmpres);
+                      if tmpres > result then
+                        result := tmpres;
+                    end;
+                    wait := true;
+                  end;
+                6:
+                  begin
+                    if numofobj = 13 then
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                      dec(tmpres);
+                    end;
+                    wait := true;
+                  end;
+                7:
+                  begin
+                    if (numofobj = 8) or (numofobj = 11) then
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                      dec(tmpres);
+                    end;
+                    wait := true;
+                  end;
+              end;
             end;
+          2: { FOR }
+            begin
+              case Mass[length(Mass) - 1].Status of
+                1:
+                  begin
+                    if numofobj = 8 then
+                    begin
+                      Mass[length(Mass) - 1].Status := 2;
+                      SetLength(Mass, length(Mass) - 1);
+                      dec(tmpres);
+                    end;
+                    if numofobj = 12 then
+                      Mass[length(Mass) - 1].Status := 3;
+                    if numofobj = 11 then
+                      Mass[length(Mass) - 1].Status := 4;
+                    wait := true;
+                  end;
+                3:
+                  begin
+                    if numofobj = 13 then
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                      dec(tmpres);
+                    end;
+                    wait := true;
+                  end;
+                4:
+                  begin
+                    if (numofobj = 8) or (numofobj = 11) then
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                      dec(tmpres);
+                    end;
+                    wait := true;
+                  end;
+              end;
+            end;
+          3: { WHILE }
+            begin
+              case Mass[length(Mass) - 1].Status of
+                1:
+                  begin
+                    if numofobj = 12 then
+                      Mass[length(Mass) - 1].Status := 2;
+                    if numofobj = 11 then
+                      Mass[length(Mass) - 1].Status := 3;
+                    wait := true;
+                  end;
+                2:
+                  begin
+                    if numofobj = 13 then
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                      dec(tmpres);
+                    end;
+                    wait := true;
+                  end;
+                3:
+                  begin
+                    if (numofobj = 8) or (numofobj = 11) then
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                      dec(tmpres);
+                    end;
+                    wait := true;
+                  end;
+              end;
+            end;
+          4: { SWITCH }
+            begin
+              case Mass[length(Mass) - 1].Status of
+                1:
+                  begin
+                    if (numofobj = 4) or (numofobj = 7) then
+                    begin
+                      Mass[length(Mass) - 1].Status := 2;
+                      inc(tmpres);
+                      if tmpres > result then
+                        result := tmpres;
+                    end;
+                    wait := true;
+                    if (numofobj = 13) then
+                    begin
+                      SetLength(Mass, length(Mass) - 1);
+                    end;
+                    wait := true;
+
+                  end;
+                2:
+                  begin
+                    if numofobj = 14 then
+                    begin
+                      Mass[length(Mass) - 1].Status := 1;
+                      dec(tmpres);
+                    end;
+                    wait := true;
+                  end;
+              end;
+            end;
+        else
+          begin
+            wait := true;
           end;
+        end;
+
+      end
+      else
+      begin
+        wait:=true;
       end;
-    end;
-
+    until wait = true;
   end;
 
 end;
