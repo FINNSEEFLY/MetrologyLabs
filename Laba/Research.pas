@@ -23,33 +23,37 @@ Type
 Const
   COMEXP = '(\/\*[\s\S]*?(.*)\*\/)|(\/\/.*)';
   OPERATOREXP =
-    //'([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|break|continue|switch|case|;|{|\[|\,|\.';
-    //'([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|\+\=|\-\=|\*\=|\/\=|\%\=|\.\.|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\.';
-      '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|'+
-      '\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\(|\.';
-  KEYWORDEXP = ('\b(def|double|int|float|byte|short|long|char|boolean|string|else|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
+  // '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|break|continue|switch|case|;|{|\[|\,|\.';
+  // '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|\+\=|\-\=|\*\=|\/\=|\%\=|\.\.|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\.';
+    '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|'
+    + '\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\(|\.';
+  KEYWORDEXP =
+    ('\b(def|double|int|float|byte|short|long|char|boolean|string|else|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
   STRINGEXP = '("[^"]*")|(''[^'']*'')';
   OPERANDEXP =
-    //'(?<!\\)(([a-zA-Z0-9][a-zA-z0-9_$]*)+\.?)*(([a-zA-Z0-9][a-zA-z0-9_$]*)+?)+';
+  // '(?<!\\)(([a-zA-Z0-9][a-zA-z0-9_$]*)+\.?)*(([a-zA-Z0-9][a-zA-z0-9_$]*)+?)+';
     '\b[^() }{[\]]*\b';
-  FUNCTIONDEF = '\b(def|double|int|float|byte|short|long|char|boolean|string|void)[ ]{0,}[a-zA-Z1-9]{1,}\({1,}.*\)';
+  FUNCTIONDEF =
+    '\b(def|double|int|float|byte|short|long|char|boolean|string|void)[ ]{0,}[a-zA-Z1-9]{1,}\({1,}.*\)';
 
   absOPERATOR = '(\b(for|if|while|case)\b)|\?';
-  {Без фигурных скобок}
-  allOPERATOR = '\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|\[|\,|\(|\.';
+  { Без фигурных скобок }
+  allOPERATOR =
+    '\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|\[|\,|\(|\.';
 
-  ROLF1 = '\;';
-  ROLF2 = 'if';
-  ROLF3 = 'switch';
-  ROLF4 = 'while';
-  ROLF5 = 'for';
-  ROLF6 = ' ';
-  ROLF7 = '$';
-  ROLF8 = '\?';
-  ROLF9 = 'else';
-  ROLF10 = 'default';
+  REGW1 = 'if';
+  REGW2 = 'for';
+  REGW3 = 'else';
+  REGW4 = 'case[ ]*[^:]*:';
+  REGW5 = 'while';
+  REGW6 = 'switch';
+  REGW7 = 'default[ ]*:';
+  REGW8 = '\;';
+  REGW9 = ' ';
+  REGW10 = '\?';
+  REGW11 = '$';
 
-  Var
+Var
   OPERATORS: TOperators;
   OPERANDS: TOperands;
   absOPERATORS, allOPERATORS: TOperators;
@@ -75,6 +79,8 @@ function ProgramLength(const OPERATORS: TOperators;
 
 function ProgramDict(const OPERATORS: TOperators;
   const OPERANDS: TOperands): integer;
+
+Function MNL(var text: string): integer;
 
 Implementation
 
@@ -287,7 +293,7 @@ var
   strbuf: string;
   flag: boolean;
 begin
-_regexp := TRegEx.Create(absOPERATOR);
+  _regexp := TRegEx.Create(absOPERATOR);
   temp := _regexp.Matches(text);
   text := _regexp.Replace(text, ' ');
   for i := 0 to temp.Count - 1 do
@@ -369,16 +375,16 @@ begin
   DelComments(text);
   Delfunctiondef(text);
   DelStrings(text, OPERANDS);
-  //showmessage(text);
+  // showmessage(text);
 
   DelKeywords(text);
-  //showmessage(text);
+  // showmessage(text);
 
   DelOperators(text, OPERATORS);
-  //showmessage(text);
+  // showmessage(text);
 
   DelOperands(text, OPERANDS);
-  //showmessage(text);
+  // showmessage(text);
 end;
 
 Procedure jAnalizeCode(var text: string; var absOPERATORS: TOperators;
@@ -391,93 +397,205 @@ begin
   Delfunctiondef(text);
   DelStrings(text, OPERANDS);
 
-
   DelKeywords(text);
 
   { Подсчет условных операторов }
-  jabsFindOperators(text,absOPERATORS);
+  jabsFindOperators(text, absOPERATORS);
   { Общее количество операторов }
-  jallFindOperators(text,allOPERATORS);
+  jallFindOperators(text, allOPERATORS);
   { Максимальный уровень вложенности }
 end;
 
 { Возвращает результат чтения
   0 - успешное чтение
-  -1 - конец строки
- numofobf:
-    1: ;
-    2: if
-    3: switch
-    4: while
-    5: for
-    6: ' '
-    7: \n  #13#10
-    8: \?
-    9: else
-   10: default
-   11: sometext
-               
+  1 - конец строки
+  numofobj:
+  REGW1 = 'if';
+  REGW2 = 'for';
+  REGW3 = 'else';
+  REGW4 = 'case';
+  REGW5 = 'while';
+  REGW6 = 'switch';
+  REGW7 = 'default';
+  REGW8 = '\;';
+  REGW9 = ' ';
+  REGW10 = '\?';
+  REGW11 = '$';
+  12 = sometxt
 }
-Function ReadOneLexeme(var text:string; var numofobj:integer;  var nos:integer):integer;
+Function ReadOneLexeme(var text: string; var numofobj: integer;
+  var nos: integer): integer;
 var
-  i:integer;
-  fl:boolean;
-  resstr:string;
+  i: integer;
+  fl: boolean;
+  resstr: string;
   _regexp: TRegEx;
+  sk: integer;
 begin
-  fl:=true;
-  resstr:='';
-  i:=1;
-  while (fl) and (nos<=length(text)) do
+  fl := true;
+  resstr := '';
+  i := 1;
+  while (fl) and (nos <= length(text)) do
   begin
-    resstr:=resstr+text[nos];
+    resstr := resstr + text[nos];
     inc(nos);
-    if (_regexp.IsMatch(resstr,ROLF1)) then
+    if (_regexp.IsMatch(resstr, REGW1)) then
     begin
-      
+      numofobj := 1;
+      fl := false;
+      sk := 1;
+      while (sk <> 0) do
+      begin
+        resstr := resstr + text[nos];
+        if text[nos] = '(' then
+          inc(sk);
+        if text[nos] = ')' then
+          dec(sk);
+        inc(nos);
+      end;
+      result := 0;
     end;
-    if (_regexp.IsMatch(resstr,ROLF2)) then
+    if (_regexp.IsMatch(resstr, REGW2)) then
     begin
+      numofobj := 2;
+      fl := false;
+      sk := 1;
+      while (sk <> 0) do
+      begin
+        resstr := resstr + text[nos];
+        if text[nos] = '(' then
+          inc(sk);
+        if text[nos] = ')' then
+          dec(sk);
+        inc(nos);
+      end;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW3)) then
+    begin
+      numofobj := 3;
+      fl := false;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW4)) then
+    begin
+      numofobj := 4;
+      fl := false;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW5)) then
+    begin
+      numofobj := 5;
+      fl := false;
+      sk := 1;
+      while (sk <> 0) do
+      begin
+        resstr := resstr + text[nos];
+        if text[nos] = '(' then
+          inc(sk);
+        if text[nos] = ')' then
+          dec(sk);
+        inc(nos);
+      end;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW6)) then
+    begin
+      numofobj := 6;
+      fl := false;
+      sk := 1;
+      while (sk <> 0) do
+      begin
+        resstr := resstr + text[nos];
+        if text[nos] = '(' then
+          inc(sk);
+        if text[nos] = ')' then
+          dec(sk);
+        inc(nos);
+      end;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW7)) then
+    begin
+      numofobj := 7;
+      fl := false;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW8)) then
+    begin
+      if length(resstr) = 1 then
+      begin
+        numofobj := 8;
+      end
+      else
+      begin
+        dec(nos);
+        SetLength(resstr, length(resstr) - 1);
+        numofobj := 12;
+      end;
+      fl := false;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW9)) then
+    begin
+      if length(resstr) = 1 then
+      begin
+        numofobj := 9;
+      end
+      else
+      begin
+        dec(nos);
+        SetLength(resstr, length(resstr) - 1);
+        numofobj := 12;
+      end;
+      fl := false;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW10)) then
+    begin
+      if length(resstr) = 1 then
+      begin
+        numofobj := 10;
+      end
+      else
+      begin
+        dec(nos);
+        SetLength(resstr, length(resstr) - 1);
+        numofobj := 12;
+      end;
+      fl := false;
+      result := 0;
+    end;
+    if (_regexp.IsMatch(resstr, REGW11)) then
+    begin
+      if length(resstr) = 2 then
+      begin
+        numofobj := 11;
+      end
+      else
+      begin
+        dec(nos);
+        dec(nos);
+        SetLength(resstr, length(resstr) - 1);
+        numofobj := 12;
+      end;
+      fl := false;
+      result := 0;
+    end;
+  end;
+end;
 
-    end;
-    if (_regexp.IsMatch(resstr,ROLF3)) then
-    begin
-
-    end;
-    if (_regexp.IsMatch(resstr,ROLF4)) then
-    begin
-
-    end;
-    if (_regexp.IsMatch(resstr,ROLF5)) then
-    begin
-
-    end;
-    if (_regexp.IsMatch(resstr,ROLF6)) then
-    begin
-
-    end;
-    if (_regexp.IsMatch(resstr,ROLF7)) then
-    begin
-
-    end;
-    if (_regexp.IsMatch(resstr,ROLF8)) then
-    begin
-
-    end;
-    if (_regexp.IsMatch(resstr,ROLF9)) then
-    begin
-
-    end;
-    if (_regexp.IsMatch(resstr,ROLF10)) then
-    begin
-
-    end;
-    
-    
-    
+{ MNL - Maximum Nesting Level }
+Function MNL(var text: string): integer;
+var
+  nos, numofobj: integer;
+begin
+  while (nos<=length(text)) do
+  begin
+    numofobj:=0;
+    ReadOneLexeme(text,numofobj,nos);
 
   end;
-
 
 end;
 
