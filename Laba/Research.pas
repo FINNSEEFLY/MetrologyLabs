@@ -51,7 +51,7 @@ Const
   REGW3 = 'else';
   REGW4 = 'case[ ]*[^:]*:';
   REGW5 = 'while';
-  REGW6 = 'switch.*{';
+  REGW6 = 'switch';
   REGW7 = 'default[ ]*:';
   REGW8 = '\;';
   REGW9 = ' ';
@@ -417,7 +417,7 @@ end;
 
 
 Function ReadOneLexeme(var text: string; var numofobj: integer;
-  var nos: integer): integer;
+  var nos: integer): string;
 { Возвращает результат чтения
   0 - успешное чтение
   1 - конец строки
@@ -470,7 +470,7 @@ begin
           dec(sk);
         inc(nos);
       until (sk = 0) and dfl=true;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW2)) then
@@ -490,21 +490,21 @@ begin
           dec(sk);
         inc(nos);
       until (sk = 0) and dfl=true;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW3)) then
     begin
       numofobj := 3;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW4)) then
     begin
       numofobj := 4;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW5)) then
@@ -524,28 +524,36 @@ begin
           dec(sk);
         inc(nos);
       until (sk = 0) and dfl=true;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW14)) then
     begin
       numofobj := 14;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW6)) then
     begin
       numofobj := 6;
       fl := false;
-      result := 0;
+      dfl:=false;
+      while dfl=false do
+      begin
+        resstr:=resstr+text[nos];
+        inc(nos);
+        if(text[nos]='{') then
+          dfl:=true;
+      end;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW7)) then
     begin
       numofobj := 7;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW8)) then
@@ -561,7 +569,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if ((_regexp.IsMatch(resstr, REGW9)) or (resstr[Length(resstr)]=#0)) then
@@ -577,7 +585,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW10)) then
@@ -593,7 +601,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if ((resstr[length(resstr) - 1] = #13) and (resstr[length(resstr)] = #10))
@@ -611,7 +619,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW12)) then
@@ -627,7 +635,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW13)) then
@@ -643,7 +651,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := 0;
+      result := resstr;
       Continue;
     end;
   end;
@@ -683,6 +691,7 @@ var
   wait: boolean;
   Mass: array of TProgress;
   tmpres: integer;
+  str:string;
 
 begin
   result := 0;
@@ -690,7 +699,7 @@ begin
   while (nos <= length(text)) do
   begin
     numofobj := 0;
-    ReadOneLexeme(text, numofobj, nos);
+    str:=ReadOneLexeme(text, numofobj, nos);
     if numofobj = 1 then
     begin
       SetLength(Mass, length(Mass) + 1);
@@ -732,6 +741,7 @@ begin
     end;
     if length(Mass) > 0 then
     begin
+      wait:=true;
       case Mass[length(Mass) - 1].OBJ of
         1: { IF }
           begin
