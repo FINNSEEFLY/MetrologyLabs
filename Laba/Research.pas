@@ -20,6 +20,7 @@ Type
   TProgress = record
     OBJ: integer; // Объект с которым идет работа
     Status: integer; // Статус объекта
+    Scase: integer;
   end;
 
   TOperators = array of TOperator;
@@ -434,15 +435,15 @@ Function ReadOneLexeme(var text: string; var numofobj: integer;
   REGW1 = 'if';
   REGW2 = 'for';
   REGW3 = 'else';
-  REGW4 = 'case[ ]*[^:]*:';
-  REGW5 = 'while';
+  REGW4 = 'case:';
+  REGW5 = 'while()';
   REGW14 = 'break';
-  REGW6 = 'switch.*{';
-  REGW7 = 'default[ ]*:';
+  REGW6 = 'switch{';
+  REGW7 = 'default:';
   REGW8 = '\;';
   REGW9 = ' ';
   REGW10 = '\?';
-  REGW11 = '$';
+  REGW11 = '#13#10';
   REGW12 = '{';
   REGW13 = ' }{ ';
   15 = sometxt
@@ -693,27 +694,33 @@ Function MNL(var text: string): integer;
   IF
   OBJ = 1    //Объект IF
   Status = 1 //Ожидается { или #13#10
-  Status = 2 //введен {, ожидать }       {
+  Status = 2 //введен {, ожидать }                            {
   Status = 3 //введен #13#10,ждем ; или #13#10
+  Status = 4 //веден }{ |#13#10|; ожидаем sometxt | else
+  {else }                                                      {
+  Status = 5 //введен else, Ожидается { или #13#10
+  Status = 6 //введен { ожидается }                            {
+  Status = 7 //введен #13#10,ждем ; или #13#10
 
   FOR
   OBJ = 2    // Объект For
   Status = 1 // Ожидаем { | #13#10 | ;
   Status = 2 // Введен ; --> конец без ветвления
-  Status = 3 // Введен { ожидание }       {
+  Status = 3 // Введен { ожидание }                           {
   Status = 4 // Введен #13#10 ожидание ; | #13#10
 
   while
   OBJ = 3    // Объект while
   Status = 1 // Ожидаем { | #13#10 | ;
-  Status = 2 // Введен { ожидание }       {
+  Status = 2 // Введен { ожидание }                           {
   Status = 3 // Введен #13#10 ожидание ; | #13#10
 
   Switch
   OBJ = 4    // Объект switch
-  Status = 1 // Ожидаем case: | default: | }          {
+  Status = 1 // Ожидаем case: | default: | }                  {
   Status = 2 // Введен case: ожидаем break
-  Status = 3 // Введен break, ожидаем: case | default | }     {
+  Status = 1 // Введен break, ожидаем: case | default | }      {
+
 }
 var
   nos, numofobj: integer;
@@ -767,12 +774,13 @@ begin
       SetLength(Mass, length(Mass) + 1);
       Mass[length(Mass) - 1].OBJ := 4;
       Mass[length(Mass) - 1].Status := 1;
+      Mass[length(Mass) - 1].Scase := 0;
     end;
     wait := true;
     repeat
       if length(Mass) > 0 then
       begin
-        
+
         case Mass[length(Mass) - 1].OBJ of
           1: { IF }
             begin
@@ -790,7 +798,8 @@ begin
                     if numofobj = 13 then
                     begin
                       Mass[length(Mass) - 1].Status := 4;
-                      dec(tmpres);
+                      if (length(Mass) > 0) then
+                        dec(tmpres);
                     end;
                     wait := true;
                   end;
@@ -799,13 +808,17 @@ begin
                     if (numofobj = 8) or (numofobj = 11) then
                     begin
                       Mass[length(Mass) - 1].Status := 4;
-                      dec(tmpres);
+                      if (length(Mass) > 0) then
+                        dec(tmpres);
                     end;
+                    if numofobj = 12 then
+                      Mass[length(Mass) - 1].Status := 2;
                     wait := true;
                   end;
                 4:
                   begin
-                    if (numofobj in [1,2,4,5,6,7,8,10,12,13,14,15]) then               
+                    if (numofobj in [1, 2, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15])
+                    then
                     begin
                       SetLength(Mass, length(Mass) - 1);
                       wait := false;
@@ -813,12 +826,12 @@ begin
                     if (numofobj = 15) then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      wait:=true;
+                      wait := true;
                     end;
                     if numofobj = 3 then
                     begin
                       Mass[length(Mass) - 1].Status := 5;
-                      wait:=true;
+                      wait := true;
                     end;
 
                   end;
@@ -827,7 +840,7 @@ begin
 
                     if numofobj = 12 then
                     begin
-                      inc(tmpres);
+                      //inc(tmpres);
                       if tmpres > result then
                         result := tmpres;
                       Mass[length(Mass) - 1].Status := 6;
@@ -835,7 +848,7 @@ begin
                     if numofobj = 11 then
                     begin
                       Mass[length(Mass) - 1].Status := 7;
-                      inc(tmpres);
+                      //inc(tmpres);
                       if tmpres > result then
                         result := tmpres;
                     end;
@@ -846,7 +859,7 @@ begin
                     if numofobj = 13 then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      dec(tmpres);
+                      //dec(tmpres);
                     end;
                     wait := true;
                   end;
@@ -855,9 +868,11 @@ begin
                     if (numofobj = 8) or (numofobj = 11) then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      dec(tmpres);
+                      //dec(tmpres);
                     end;
                     wait := true;
+                    if numofobj = 12 then
+                      Mass[length(Mass) - 1].Status := 6;
                   end;
               end;
             end;
@@ -883,7 +898,8 @@ begin
                     if numofobj = 13 then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      dec(tmpres);
+                      if (length(Mass) > 0) then
+                        dec(tmpres);
                     end;
                     wait := true;
                   end;
@@ -892,8 +908,11 @@ begin
                     if (numofobj = 8) or (numofobj = 11) then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      dec(tmpres);
+                      if (length(Mass) > 0) then
+                        dec(tmpres);
                     end;
+                    if numofobj = 12 then
+                      Mass[length(Mass) - 1].Status := 3;
                     wait := true;
                   end;
               end;
@@ -914,7 +933,8 @@ begin
                     if numofobj = 13 then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      dec(tmpres);
+                      if (length(Mass) > 0) then
+                        dec(tmpres);
                     end;
                     wait := true;
                   end;
@@ -923,8 +943,11 @@ begin
                     if (numofobj = 8) or (numofobj = 11) then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      dec(tmpres);
+                      if (length(Mass) > 0) then
+                        dec(tmpres);
                     end;
+                    if numofobj = 12 then
+                      Mass[length(Mass) - 1].Status := 2;
                     wait := true;
                   end;
               end;
@@ -937,13 +960,18 @@ begin
                     if (numofobj = 4) or (numofobj = 7) then
                     begin
                       Mass[length(Mass) - 1].Status := 2;
-                      inc(tmpres);
-                      if tmpres > result then
-                        result := tmpres;
+                      if numofobj = 4 then
+                      begin
+                        inc(tmpres);
+                        inc(Mass[length(mass)-1].scase);
+                        if tmpres > result then
+                          result := tmpres;
+                      end;
                     end;
                     wait := true;
                     if (numofobj = 13) then
                     begin
+                      tmpres:=tmpres-Mass[length(mass)-1].scase;
                       SetLength(Mass, length(Mass) - 1);
                     end;
                     wait := true;
@@ -954,8 +982,14 @@ begin
                     if numofobj = 14 then
                     begin
                       Mass[length(Mass) - 1].Status := 1;
-                      dec(tmpres);
                     end;
+                    if numofobj = 13 then
+                    begin
+                      tmpres:=tmpres-Mass[length(mass)-1].scase;
+                      SetLength(Mass, length(Mass) - 1);
+
+                    end;
+
                     wait := true;
                   end;
               end;
@@ -969,7 +1003,7 @@ begin
       end
       else
       begin
-        wait:=true;
+        wait := true;
       end;
     until wait = true;
   end;

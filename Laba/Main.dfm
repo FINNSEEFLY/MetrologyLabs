@@ -2,7 +2,7 @@ object fmMain: TfmMain
   Left = 0
   Top = 0
   BorderStyle = bsSingle
-  Caption = #1052#1077#1090#1088#1080#1082#1080' '#1061#1086#1083#1089#1090#1077#1076#1072
+  Caption = #1056#1072#1089#1095#1077#1090' '#1084#1077#1090#1088#1080#1082' '#1082#1086#1076#1072
   ClientHeight = 611
   ClientWidth = 1267
   Color = clWhite
@@ -17,14 +17,14 @@ object fmMain: TfmMain
   object pnlbtnbox: TPanel
     Left = 0
     Top = 0
-    Width = 289
+    Width = 353
     Height = 611
     Align = alLeft
     TabOrder = 0
     object bbOpenFile: TButton
       Left = 1
       Top = 453
-      Width = 287
+      Width = 351
       Height = 50
       Align = alBottom
       Caption = #1054#1090#1082#1088#1099#1090#1100' '#1092#1072#1081#1083
@@ -36,11 +36,12 @@ object fmMain: TfmMain
       ParentFont = False
       TabOrder = 0
       OnClick = bbOpenFileClick
+      ExplicitWidth = 287
     end
     object bbResearch: TButton
       Left = 1
       Top = 503
-      Width = 287
+      Width = 351
       Height = 57
       Align = alBottom
       Caption = #1048#1089#1089#1083#1077#1076#1086#1074#1072#1090#1100' '#1082#1086#1076
@@ -52,11 +53,12 @@ object fmMain: TfmMain
       ParentFont = False
       TabOrder = 1
       OnClick = bbResearchClick
+      ExplicitWidth = 287
     end
     object pnlResults: TPanel
       Left = 1
       Top = 1
-      Width = 287
+      Width = 351
       Height = 41
       Align = alTop
       Caption = #1056#1077#1079#1091#1083#1100#1090#1072#1090#1099' '#1080#1089#1089#1083#1077#1076#1086#1074#1072#1085#1080#1103
@@ -67,11 +69,12 @@ object fmMain: TfmMain
       Font.Style = []
       ParentFont = False
       TabOrder = 2
+      ExplicitWidth = 287
     end
     object mmResults: TMemo
       Left = 1
       Top = 42
-      Width = 287
+      Width = 351
       Height = 339
       Align = alClient
       Font.Charset = DEFAULT_CHARSET
@@ -83,11 +86,12 @@ object fmMain: TfmMain
       ReadOnly = True
       ScrollBars = ssBoth
       TabOrder = 3
+      ExplicitWidth = 287
     end
     object btnExit: TButton
       Left = 1
       Top = 560
-      Width = 287
+      Width = 351
       Height = 50
       Align = alBottom
       Caption = #1042#1099#1093#1086#1076
@@ -99,11 +103,12 @@ object fmMain: TfmMain
       ParentFont = False
       TabOrder = 4
       OnClick = btnExitClick
+      ExplicitWidth = 287
     end
     object cmbMode: TComboBox
       Left = 1
       Top = 422
-      Width = 287
+      Width = 351
       Height = 31
       Align = alBottom
       Font.Charset = DEFAULT_CHARSET
@@ -118,11 +123,12 @@ object fmMain: TfmMain
       Items.Strings = (
         #1052#1077#1090#1088#1080#1082#1072' '#1061#1086#1083#1089#1090#1077#1076#1072
         #1052#1077#1090#1088#1080#1082#1080' '#1044#1078#1080#1083#1073#1072)
+      ExplicitWidth = 287
     end
     object pnlmode: TPanel
       Left = 1
       Top = 381
-      Width = 287
+      Width = 351
       Height = 41
       Align = alBottom
       Caption = #1042#1099#1073#1077#1088#1080#1090#1077' '#1088#1077#1078#1080#1084
@@ -133,19 +139,21 @@ object fmMain: TfmMain
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 6
+      ExplicitWidth = 287
     end
   end
   object pnlcodebox: TPanel
-    Left = 289
+    Left = 353
     Top = 0
-    Width = 496
+    Width = 473
     Height = 611
     Align = alLeft
     TabOrder = 1
+    ExplicitLeft = 312
     object pnlCode: TPanel
       Left = 1
       Top = 1
-      Width = 494
+      Width = 471
       Height = 41
       Align = alTop
       Caption = #1048#1089#1089#1083#1077#1076#1091#1077#1084#1099#1081' '#1082#1086#1076':'
@@ -156,11 +164,12 @@ object fmMain: TfmMain
       Font.Style = []
       ParentFont = False
       TabOrder = 0
+      ExplicitWidth = 494
     end
     object mmCode: TMemo
       Left = 1
       Top = 42
-      Width = 494
+      Width = 471
       Height = 568
       Align = alClient
       Font.Charset = RUSSIAN_CHARSET
@@ -171,19 +180,22 @@ object fmMain: TfmMain
       ParentFont = False
       ScrollBars = ssBoth
       TabOrder = 1
+      ExplicitWidth = 494
     end
   end
   object pnlresbox: TPanel
-    Left = 785
+    Left = 826
     Top = 0
-    Width = 482
+    Width = 441
     Height = 611
     Align = alClient
     TabOrder = 2
+    ExplicitLeft = 785
+    ExplicitWidth = 482
     object sgResults: TStringGrid
       Left = 1
       Top = 42
-      Width = 480
+      Width = 439
       Height = 568
       Align = alClient
       ColCount = 4
@@ -191,11 +203,12 @@ object fmMain: TfmMain
       RowCount = 1
       FixedRows = 0
       TabOrder = 0
+      ExplicitWidth = 480
     end
     object pnlResTable: TPanel
       Left = 1
       Top = 1
-      Width = 480
+      Width = 439
       Height = 41
       Align = alTop
       Caption = #1058#1072#1073#1083#1080#1094#1072' '#1088#1077#1079#1091#1083#1100#1090#1072#1090#1086#1074
@@ -206,6 +219,7 @@ object fmMain: TfmMain
       Font.Style = []
       ParentFont = False
       TabOrder = 1
+      ExplicitWidth = 480
     end
   end
   object odOpenFile: TOpenDialog

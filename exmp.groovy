@@ -23,7 +23,7 @@ static void main(String[] args) {
                 switch (i){
                     case 1: y++; break;
                     case 2: x++; break;
-                    default: x += y; break;
+                    default: x += y; 
                 }
                 for (int k = 0; k<=i; k++) {
                     x -= 1;
@@ -81,7 +81,7 @@ static void main(String[] args) {
                 } 
                 break;
             default: 
-                x += 1; break;
+                x += 1;
                 array[x % 30] += 2;
                 y += 4
         }
@@ -121,7 +121,7 @@ static void main(String[] args) {
                 } 
                 break;
             default: 
-                x += 1; break;
+                x += 1; 
                 array[x % 30] += 2;
                 y += 4
         }
@@ -161,7 +161,7 @@ static void main(String[] args) {
                 } 
                 break;
             default: 
-                x += 1; break;
+                x += 1; 
                 array[x % 30] += 2;
                 y += 4
         }
@@ -201,7 +201,7 @@ static void main(String[] args) {
                 } 
                 break;
             default: 
-                x += 1; break;
+                x += 1; 
                 array[x % 30] += 2;
                 y += 4
         }
@@ -241,7 +241,7 @@ static void main(String[] args) {
                 } 
                 break;
             default: 
-                x += 1; break;
+                x += 1; 
                 array[x % 30] += 2;
                 y += 4
         }
@@ -281,7 +281,7 @@ static void main(String[] args) {
                 } 
                 break;
             default: 
-                x += 1; break;
+                x += 1; 
                 array[x % 30] += 2;
                 y += 4
         }

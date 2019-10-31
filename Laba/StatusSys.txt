@@ -27,5 +27,3 @@ OBJ = 4    // Объект switch
 Status = 1 // Ожидаем case: | default: |  }
 Status = 2 // Введен case: ожидаем break
 Status = 1 // Введен break, ожидаем: case | default | }
-
-4 и 7

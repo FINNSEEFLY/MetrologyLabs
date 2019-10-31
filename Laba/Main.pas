@@ -137,13 +137,11 @@ begin
         end;
         depth:=jAnalizeCode(temp, absOPERATORS, alloperators);
         mmResults.Lines.Clear;
-        mmResults.Lines.Add('Количество условных операторов ' +
+        mmResults.Lines.Add('Абсолютная сложность(CL): ' +
           inttostr(OperatorsCount(absOPERATORS)));
-        mmResults.Lines.Add('Общее количество операторов ' +
-          inttostr(OperatorsCount(alloperators)));
         if OperatorsCount(alloperators) <> 0 then
         begin
-          mmResults.Lines.Add('Относительная сложность ' +
+          mmResults.Lines.Add('Относительная сложность(cl) ' +
             floattostr(OperatorsCount(absOPERATORS) /
             OperatorsCount(alloperators)));
         end

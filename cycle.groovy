@@ -6,7 +6,7 @@
                 switch (i){
                     case 1: y++; break;
                     case 2: x++; break;
-                    default: x += y; break;
+                    default: x += y; 
                 }
                 for (int k = 0; k<=i; k++) {
                     x -= 1;
