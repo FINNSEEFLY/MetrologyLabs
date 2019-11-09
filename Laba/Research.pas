@@ -747,19 +747,19 @@ begin
     end;
     if numofobj = 2 then
     begin
-      SetLength(Mass, length(Mass) + 1);
-      Mass[length(Mass) - 1].OBJ := 2;
-      Mass[length(Mass) - 1].Status := 1;
-      if tmpres <> 0 then
+      if length(Mass) <> 0 then
       begin
         inc(tmpres);
         if tmpres > result then
           result := tmpres;
       end;
+      SetLength(Mass, length(Mass) + 1);
+      Mass[length(Mass) - 1].OBJ := 2;
+      Mass[length(Mass) - 1].Status := 1;
     end;
     if numofobj = 5 then
     begin
-      if tmpres <> 0 then
+      if length(Mass) <> 0 then
       begin
         inc(tmpres);
         if tmpres > result then
