@@ -23,8 +23,18 @@ Type
     Scase: integer;
   end;
 
+  TVariable = record
+    Name: string;
+    P: boolean;
+    M: boolean;
+    C: boolean;
+    T: boolean;
+    I_O: boolean;
+  end;
+
   TOperators = array of TOperator;
   TOperands = array of TOperand;
+  TVariables = array of TVariable;
 
 Const
   COMEXP = '(\/\*[\s\S]*?(.*)\*\/)|(\/\/.*)';
@@ -48,7 +58,21 @@ Const
   { Без фигурных скобок }
   allOPERATOR =
     '\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|\[|\,|\(|\.';
+  CREATESCAN = 'Scanner[^;]*;';
+  DELSCAN = 'scanner[^;]*;';
+  CHEPDELSCAN = 'scanner\.close\(\);';
+  onlyvarOPERANDEXP = { '\b[^() }{ [\]0-9]*\b' } '\b[a-zA-Z_][a-zA-Z0-9]*\b';
+  LINE = '.*';
+  plplminmin = '(\+\+)|(\-\-)';
 
+
+  fiws = '\b(for|while|Фif|switch)\b';
+  scanner = 'scanner.*;';
+  regfor = '\bfor\b';
+  infor = ';[^;]*;';
+  regifswitchwhile = '\b(if|while|switch)\b';
+  equally = '=';
+  print = '\b(println|print)\b';
   REGW1 = 'if';
   REGW2 = 'for';
   REGW3 = 'else';
@@ -93,36 +117,42 @@ function ProgramDict(const OPERATORS: TOperators;
 
 Function MNL(var text: string): integer;
 
+Procedure spnAnalizeCode(var text: string; var OPERATORS: TOperators;
+  var OPERANDS: TOperands);
+
+Procedure FullChepin(var text: string; var OPERANDS: TOperands;
+  var Result: TVariables);
+
 Implementation
 
 function ProgramDict(const OPERATORS: TOperators;
   const OPERANDS: TOperands): integer;
 begin
-  result := length(OPERANDS) + length(OPERATORS);
+  Result := length(OPERANDS) + length(OPERATORS);
 end;
 
 function ProgramLength(const OPERATORS: TOperators;
   const OPERANDS: TOperands): integer;
 begin
-  result := OperatorsCount(OPERATORS) + OperandsCount(OPERANDS);
+  Result := OperatorsCount(OPERATORS) + OperandsCount(OPERANDS);
 end;
 
 function ProgramVolume(const pLen: integer; const pDict: integer): real;
 begin
   if pDict <> 0 then
-    result := pLen * Log2(pDict)
+    Result := pLen * Log2(pDict)
   else
-    result := 0;
+    Result := 0;
 end;
 
 function OperatorsCount(const OPERATORS: TOperators): integer;
 var
   i: integer;
 begin
-  result := 0;
+  Result := 0;
   for i := 0 to length(OPERATORS) - 1 do
   begin
-    result := result + OPERATORS[i].Used;
+    Result := Result + OPERATORS[i].Used;
   end;
 end;
 
@@ -130,10 +160,10 @@ function OperandsCount(const OPERANDS: TOperands): integer;
 var
   i: integer;
 begin
-  result := 0;
+  Result := 0;
   for i := 0 to length(OPERANDS) - 1 do
   begin
-    result := result + OPERANDS[i].Used;
+    Result := Result + OPERANDS[i].Used;
   end;
 end;
 
@@ -166,7 +196,7 @@ var
   _regexp: TRegEx;
 begin
   _regexp := TRegEx.Create(COMEXP);
-  text := _regexp.Replace(text, '');
+  text := _regexp.Replace(text, ' ');
 end;
 
 Procedure DelKeywords(var text: string);
@@ -174,7 +204,7 @@ var
   _regexp: TRegEx;
 begin
   _regexp := TRegEx.Create(KEYWORDEXP);
-  text := _regexp.Replace(text, '');
+  text := _regexp.Replace(text, ' ');
 end;
 
 Procedure jDelKeywords(var text: string);
@@ -190,7 +220,7 @@ var
   _regexp: TRegEx;
 begin
   _regexp := TRegEx.Create(FUNCTIONDEF);
-  text := _regexp.Replace(text, '');
+  text := _regexp.Replace(text, ' ');
 end;
 
 Procedure DelStrings(var text: string; var OPERANDS: TOperands);
@@ -222,6 +252,18 @@ begin
   end;
 end;
 
+Procedure spnDelStrings(var text: string; OPERANDS: TOperands);
+var
+  _regexp: TRegEx;
+  temp: TMatchCollection;
+  i: integer;
+  j: integer;
+  flag: boolean;
+begin
+  _regexp := TRegEx.Create(STRINGEXP);
+  text := _regexp.Replace(text, ' ');
+end;
+
 Procedure DelOperands(var text: string; var OPERANDS: TOperands);
 var
   _regexp: TRegEx;
@@ -231,6 +273,35 @@ var
   flag: boolean;
 begin
   _regexp := TRegEx.Create(OPERANDEXP);
+  temp := _regexp.Matches(text);
+  text := _regexp.Replace(text, ' ');
+  for i := 0 to temp.Count - 1 do
+  begin
+    flag := false;
+    j := 0;
+    while (j < length(OPERANDS)) and (not(flag)) do
+    begin
+      if temp.Item[i].Value = OPERANDS[j].Operand then
+      begin
+        flag := true;
+        OPERANDS[j].Used := OPERANDS[j].Used + 1;
+      end;
+      j := j + 1;
+    end;
+    if not(flag) then
+      AddToOperands(OPERANDS, temp.Item[i].Value);
+  end;
+end;
+
+Procedure varDelOperands(var text: string; var OPERANDS: TOperands);
+var
+  _regexp: TRegEx;
+  temp: TMatchCollection;
+  i: integer;
+  j: integer;
+  flag: boolean;
+begin
+  _regexp := TRegEx.Create(onlyvarOPERANDEXP);
   temp := _regexp.Matches(text);
   text := _regexp.Replace(text, ' ');
   for i := 0 to temp.Count - 1 do
@@ -386,6 +457,28 @@ begin
   end;
 end;
 
+Procedure Delscaner(var text: string);
+var
+  _regexp: TRegEx;
+begin
+  _regexp := TRegEx.Create(CREATESCAN);
+  text := _regexp.Replace(text, ' ');
+  _regexp := TRegEx.Create(DELSCAN);
+  text := _regexp.Replace(text, ' ');
+
+end;
+
+Procedure CHEPDelscaner(var text: string);
+var
+  _regexp: TRegEx;
+begin
+  _regexp := TRegEx.Create(CREATESCAN);
+  text := _regexp.Replace(text, ' ');
+  _regexp := TRegEx.Create(CHEPDELSCAN);
+  text := _regexp.Replace(text, ' ');
+
+end;
+
 Procedure hAnalizeCode(var text: string; var OPERATORS: TOperators;
   var OPERANDS: TOperands);
 begin
@@ -423,7 +516,7 @@ begin
   { Общее количество операторов }
   jallFindOperators(text, allOPERATORS);
   { Максимальный уровень вложенности }
-  result := MNL(text);
+  Result := MNL(text);
 end;
 
 Function ReadOneLexeme(var text: string; var numofobj: integer;
@@ -480,7 +573,7 @@ begin
           dec(sk);
         inc(nos);
       until (sk = 0) and dfl = true;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW2)) then
@@ -500,14 +593,14 @@ begin
           dec(sk);
         inc(nos);
       until (sk = 0) and dfl = true;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW3)) then
     begin
       numofobj := 3;
       fl := false;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW4)) then
@@ -522,7 +615,7 @@ begin
         if text[nos - 1] = ':' then
           dfl := true;
       end;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW5)) then
@@ -542,14 +635,14 @@ begin
           dec(sk);
         inc(nos);
       until (sk = 0) and dfl = true;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW14)) then
     begin
       numofobj := 14;
       fl := false;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW6)) then
@@ -564,7 +657,7 @@ begin
         if (text[nos - 1] = '{') then
           dfl := true;
       end;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW7)) then
@@ -578,7 +671,7 @@ begin
         if text[nos - 1] = ':' then
           dfl := true;
       end;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW8)) then
@@ -594,7 +687,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if ((_regexp.IsMatch(resstr, REGW9)) or (resstr[length(resstr)] = #0)) then
@@ -616,7 +709,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW10)) then
@@ -632,7 +725,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if ((resstr[length(resstr) - 1] = #13) and (resstr[length(resstr)] = #10))
@@ -650,7 +743,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW12)) then
@@ -666,7 +759,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
     if (_regexp.IsMatch(resstr, REGW13)) then
@@ -682,7 +775,7 @@ begin
         numofobj := 15;
       end;
       fl := false;
-      result := resstr;
+      Result := resstr;
       Continue;
     end;
   end;
@@ -730,7 +823,7 @@ var
   str: string;
 
 begin
-  result := 0;
+  Result := 0;
   tmpres := 0;
   while (nos <= length(text)) do
   begin
@@ -742,16 +835,16 @@ begin
       Mass[length(Mass) - 1].OBJ := 1;
       Mass[length(Mass) - 1].Status := 1;
       inc(tmpres);
-      if tmpres > result then
-        result := tmpres;
+      if tmpres > Result then
+        Result := tmpres;
     end;
     if numofobj = 2 then
     begin
       if length(Mass) <> 0 then
       begin
         inc(tmpres);
-        if tmpres > result then
-          result := tmpres;
+        if tmpres > Result then
+          Result := tmpres;
       end;
       SetLength(Mass, length(Mass) + 1);
       Mass[length(Mass) - 1].OBJ := 2;
@@ -762,8 +855,8 @@ begin
       if length(Mass) <> 0 then
       begin
         inc(tmpres);
-        if tmpres > result then
-          result := tmpres;
+        if tmpres > Result then
+          Result := tmpres;
       end;
       SetLength(Mass, length(Mass) + 1);
       Mass[length(Mass) - 1].OBJ := 3;
@@ -840,17 +933,17 @@ begin
 
                     if numofobj = 12 then
                     begin
-                      //inc(tmpres);
-                      if tmpres > result then
-                        result := tmpres;
+                      // inc(tmpres);
+                      if tmpres > Result then
+                        Result := tmpres;
                       Mass[length(Mass) - 1].Status := 6;
                     end;
                     if numofobj = 11 then
                     begin
                       Mass[length(Mass) - 1].Status := 7;
-                      //inc(tmpres);
-                      if tmpres > result then
-                        result := tmpres;
+                      // inc(tmpres);
+                      if tmpres > Result then
+                        Result := tmpres;
                     end;
                     wait := true;
                   end;
@@ -859,7 +952,7 @@ begin
                     if numofobj = 13 then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      //dec(tmpres);
+                      // dec(tmpres);
                     end;
                     wait := true;
                   end;
@@ -868,7 +961,7 @@ begin
                     if (numofobj = 8) or (numofobj = 11) then
                     begin
                       SetLength(Mass, length(Mass) - 1);
-                      //dec(tmpres);
+                      // dec(tmpres);
                     end;
                     wait := true;
                     if numofobj = 12 then
@@ -963,15 +1056,15 @@ begin
                       if numofobj = 4 then
                       begin
                         inc(tmpres);
-                        inc(Mass[length(mass)-1].scase);
-                        if tmpres > result then
-                          result := tmpres;
+                        inc(Mass[length(Mass) - 1].Scase);
+                        if tmpres > Result then
+                          Result := tmpres;
                       end;
                     end;
                     wait := true;
                     if (numofobj = 13) then
                     begin
-                      tmpres:=tmpres-Mass[length(mass)-1].scase;
+                      tmpres := tmpres - Mass[length(Mass) - 1].Scase;
                       SetLength(Mass, length(Mass) - 1);
                     end;
                     wait := true;
@@ -985,7 +1078,7 @@ begin
                     end;
                     if numofobj = 13 then
                     begin
-                      tmpres:=tmpres-Mass[length(mass)-1].scase;
+                      tmpres := tmpres - Mass[length(Mass) - 1].Scase;
                       SetLength(Mass, length(Mass) - 1);
 
                     end;
@@ -1006,6 +1099,327 @@ begin
         wait := true;
       end;
     until wait = true;
+  end;
+
+end;
+
+Procedure MinusOneOPERANDS(var OPERANDS: TOperands);
+var
+  i: integer;
+begin
+  for i := 0 to length(OPERANDS) do
+    dec(OPERANDS[i].Used);
+end;
+
+Procedure spnAnalizeCode(var text: string; var OPERATORS: TOperators;
+  var OPERANDS: TOperands);
+begin
+  InitOperands(OPERANDS);
+  InitOperators(OPERATORS);
+  DelComments(text);
+  Delfunctiondef(text);
+  Delscaner(text);
+  spnDelStrings(text, OPERANDS);
+  // showmessage(text);
+
+  DelKeywords(text);
+  // showmessage(text);
+
+  DelOperators(text, OPERATORS);
+  // showmessage(text);
+
+  varDelOperands(text, OPERANDS);
+  // showmessage(text);
+end;
+
+Procedure InitVariables(var OPERANDS: TOperands; var Variables: TVariables);
+var
+  i: integer;
+begin
+  SetLength(Variables, 0);
+  for i := 0 to length(OPERANDS) - 1 do
+  begin
+    SetLength(Variables, length(Variables) + 1);
+    Variables[i].Name := OPERANDS[i].Operand;
+    Variables[i].P := false;
+    Variables[i].M := false;
+    Variables[i].C := false;
+    Variables[i].T := true;
+    Variables[i].I_O := false;
+  end;
+end;
+
+Function FindNumInVariables(const s: string;
+  const Variables: TVariables): integer;
+var
+  i: integer;
+begin
+  Result := -1;
+  for i := 0 to length(Variables) - 1 do
+  begin
+    if s = Variables[i].Name then
+    begin
+      Result := i;
+      break;
+    end;
+  end;
+end;
+
+Procedure LineTo2Line(const s: string; const equalpos: integer;
+  var left, right: string);
+var
+  i: integer;
+  fl: boolean;
+begin
+  SetLength(left, 0);
+  SetLength(right, 0);
+  fl := false;
+  for i := 1 to length(s) do
+  begin
+    if not fl then
+    begin
+      if i <> equalpos then
+      begin
+        left := left + s[i];
+      end
+      else
+      begin
+        fl := true;
+      end;
+    end
+    else
+    begin
+      right := right + s[i];
+    end;
+  end;
+end;
+
+Procedure SwitchTagVar(var Variable: TVariable; const tag: integer);
+// ---------------ТЕГИ----------------
+// 1 - не T - Паразитные
+// 2 - C - Управление программой
+// 3 - M - Модифицируемые но не C
+// 4 - P - Вводимые но не M и не C
+// 5 - I/O переменная
+// 6 - Не P
+// Возможные сочетания {P,PT,M,MT,C,T}
+// -----------------------------------
+
+begin
+  case tag of
+    1: // not T
+      begin
+        Variable.T := false;
+      end;
+    2: // C
+      begin
+        Variable.T := false;
+        Variable.P := false;
+        Variable.M := false;
+        Variable.C := true;
+      end;
+    3: // M
+      begin
+        if (Variable.C = false) and (Variable.P = false) then
+        begin
+          Variable.M := true;
+        end;
+      end;
+    4: // P
+      begin
+        if (Variable.C = false) and (Variable.M = false) then
+        begin
+          Variable.P := true;
+        end;
+
+      end;
+    5: // I/O
+      begin
+        Variable.I_O := true;
+      end;
+    6: // not P
+      begin
+        Variable.P := false;
+      end;
+  end;
+end;
+
+Procedure LeftRightCheck(const left, right: string; var Variables: TVariables);
+var
+  _regexp: TRegEx;
+  Matches, Matches2: TMatchCollection;
+  i: integer;
+  LeftVariable: TVariable;
+begin
+  _regexp.Create(onlyvarOPERANDEXP);
+  Matches := _regexp.Matches(left);
+  LeftVariable := Variables[FindNumInVariables(Matches.Item[0].Value,
+    Variables)];
+  Matches2 := _regexp.Matches(right);
+  for i := 0 to Matches2.Count - 1 do
+  begin
+    if Matches2.Item[i].Value <> LeftVariable.Name then
+    begin
+      SwitchTagVar(Variables[FindNumInVariables(Matches2.Item[i].Value,
+        Variables)], 3);
+      SwitchTagVar(Variables[FindNumInVariables(Matches2.Item[i].Value,
+        Variables)], 1);
+    end
+    else
+    begin
+      SwitchTagVar(Variables[FindNumInVariables(Matches2.Item[i].Value,
+        Variables)], 6);
+      SwitchTagVar(Variables[FindNumInVariables(Matches2.Item[i].Value,
+        Variables)], 3);
+    end;
+  end;
+  for i := 0 to Matches.Count - 1 do
+  begin
+    if i = 0 then
+    begin
+      SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+      Variables)], 6);
+      SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+      Variables)], 3);
+    end
+    else
+    begin
+      SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+      Variables)], 2);
+    end;
+
+  end;
+
+end;
+
+Procedure LineCheckFullCHepin(const s: string; var Variables: TVariables);
+var
+  _regexp: TRegEx;
+  Matches: TMatchCollection;
+  i: integer;
+  str: string;
+  leftstr, rightstr: string;
+begin
+  _regexp.Create(onlyvarOPERANDEXP);
+  // Если найдены операнды
+  if _regexp.IsMatch(s) then
+  begin
+    _regexp.Create('scanner');
+    // Найден ввод
+    if _regexp.IsMatch(s) then
+    begin
+      _regexp.Create(onlyvarOPERANDEXP);
+      SwitchTagVar(Variables[FindNumInVariables(_regexp.Matches(s)
+        .Item[0].Value, Variables)], 4);
+      SwitchTagVar(Variables[FindNumInVariables(_regexp.Matches(s)
+        .Item[0].Value, Variables)], 5);
+    end
+    else
+    begin
+      _regexp.Create(fiws);
+      // Если найден for|if|while|switch
+      if _regexp.IsMatch(s) then
+      begin
+        _regexp.Create(regfor);
+        // Найден именно for
+        if _regexp.IsMatch(s) then
+        begin
+          _regexp.Create(infor);
+          str := _regexp.Matches(s).Item[0].Value;
+          _regexp.Create(onlyvarOPERANDEXP);
+          Matches := _regexp.Matches(str);
+          // Погружаемся в условие у for
+          for i := 0 to Matches.Count - 1 do
+          begin
+            SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+              Variables)], 2);
+          end;
+        end
+        else
+        begin
+          _regexp.Create(regifswitchwhile);
+          // Найден именно if|switch|while
+          if _regexp.IsMatch(s) then
+          begin
+            _regexp.Create(onlyvarOPERANDEXP);
+            Matches := _regexp.Matches(s);
+            for i := 1 to Matches.Count - 1 do
+            begin
+              SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+                Variables)], 2);
+            end;
+          end;
+        end;
+      end
+      else
+      begin
+        _regexp.Create(equally);
+        // Найдено присваивание
+        if _regexp.IsMatch(s) then
+        begin
+          LineTo2Line(s, pos(equally, s), leftstr, rightstr);
+          LeftRightCheck(leftstr, rightstr, Variables);
+        end
+        else
+        begin
+          _regexp.Create(plplminmin);
+          if _regexp.IsMatch(s) then
+          begin
+          _regexp.Create(onlyvarOPERANDEXP);
+            Matches := _regexp.Matches(s);
+            for i := 0 to Matches.Count - 1 do
+            begin
+              SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+                Variables)], 6);
+              SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+                Variables)], 3);
+            end;
+          end
+          else
+          begin
+            _regexp.Create(print);
+            // Найден println
+            if _regexp.IsMatch(s) then
+            begin
+              _regexp.Create(onlyvarOPERANDEXP);
+              Matches := _regexp.Matches(s);
+              for i := 1 to Matches.Count - 1 do
+              begin
+                SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+                  Variables)], 1);
+                SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
+                  Variables)], 3);
+                SwitchTagVar
+                  (Variables[FindNumInVariables(_regexp.Matches(s)
+                  .Item[i].Value, Variables)], 5);
+              end;
+            end;
+          end;
+        end;
+      end;
+
+    end;
+  end;
+end;
+
+Procedure FullChepin(var text: string; var OPERANDS: TOperands;
+  var Result: TVariables);
+var
+  Matches: TMatchCollection;
+  i: integer;
+  _regexp: TRegEx;
+begin
+  InitVariables(OPERANDS, Result);
+  DelComments(text);
+  Delfunctiondef(text);
+  CHEPDelscaner(text);
+  spnDelStrings(text, OPERANDS);
+  DelKeywords(text);
+  _regexp.Create(LINE);
+  Matches := _regexp.Matches(text);
+  for i := 0 to Matches.Count - 1 do
+  begin
+    LineCheckFullCHepin(Matches.Item[i].Value, Result);
   end;
 
 end;

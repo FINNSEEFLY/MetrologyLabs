@@ -4,7 +4,7 @@ object fmMain: TfmMain
   BorderStyle = bsSingle
   Caption = #1056#1072#1089#1095#1077#1090' '#1084#1077#1090#1088#1080#1082' '#1082#1086#1076#1072
   ClientHeight = 611
-  ClientWidth = 1267
+  ClientWidth = 1550
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -36,7 +36,6 @@ object fmMain: TfmMain
       ParentFont = False
       TabOrder = 0
       OnClick = bbOpenFileClick
-      ExplicitWidth = 287
     end
     object bbResearch: TButton
       Left = 1
@@ -53,7 +52,6 @@ object fmMain: TfmMain
       ParentFont = False
       TabOrder = 1
       OnClick = bbResearchClick
-      ExplicitWidth = 287
     end
     object pnlResults: TPanel
       Left = 1
@@ -69,7 +67,6 @@ object fmMain: TfmMain
       Font.Style = []
       ParentFont = False
       TabOrder = 2
-      ExplicitWidth = 287
     end
     object mmResults: TMemo
       Left = 1
@@ -86,7 +83,6 @@ object fmMain: TfmMain
       ReadOnly = True
       ScrollBars = ssBoth
       TabOrder = 3
-      ExplicitWidth = 287
     end
     object btnExit: TButton
       Left = 1
@@ -103,7 +99,6 @@ object fmMain: TfmMain
       ParentFont = False
       TabOrder = 4
       OnClick = btnExitClick
-      ExplicitWidth = 287
     end
     object cmbMode: TComboBox
       Left = 1
@@ -122,8 +117,8 @@ object fmMain: TfmMain
       Text = #1052#1077#1090#1088#1080#1082#1072' '#1061#1086#1083#1089#1090#1077#1076#1072
       Items.Strings = (
         #1052#1077#1090#1088#1080#1082#1072' '#1061#1086#1083#1089#1090#1077#1076#1072
-        #1052#1077#1090#1088#1080#1082#1080' '#1044#1078#1080#1083#1073#1072)
-      ExplicitWidth = 287
+        #1052#1077#1090#1088#1080#1082#1080' '#1044#1078#1080#1083#1073#1072
+        #1052#1077#1090#1088#1080#1082#1080' '#1089#1083#1086#1078#1085#1086#1089#1090#1080' '#1087#1086#1090#1086#1082#1072' '#1076#1072#1085#1085#1099#1093)
     end
     object pnlmode: TPanel
       Left = 1
@@ -139,7 +134,6 @@ object fmMain: TfmMain
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 6
-      ExplicitWidth = 287
     end
   end
   object pnlcodebox: TPanel
@@ -149,7 +143,6 @@ object fmMain: TfmMain
     Height = 611
     Align = alLeft
     TabOrder = 1
-    ExplicitLeft = 312
     object pnlCode: TPanel
       Left = 1
       Top = 1
@@ -164,7 +157,6 @@ object fmMain: TfmMain
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      ExplicitWidth = 494
     end
     object mmCode: TMemo
       Left = 1
@@ -180,22 +172,20 @@ object fmMain: TfmMain
       ParentFont = False
       ScrollBars = ssBoth
       TabOrder = 1
-      ExplicitWidth = 494
     end
   end
   object pnlresbox: TPanel
     Left = 826
     Top = 0
-    Width = 441
+    Width = 724
     Height = 611
     Align = alClient
     TabOrder = 2
-    ExplicitLeft = 785
-    ExplicitWidth = 482
+    ExplicitWidth = 441
     object sgResults: TStringGrid
       Left = 1
       Top = 42
-      Width = 439
+      Width = 722
       Height = 568
       Align = alClient
       ColCount = 4
@@ -203,12 +193,12 @@ object fmMain: TfmMain
       RowCount = 1
       FixedRows = 0
       TabOrder = 0
-      ExplicitWidth = 480
+      ExplicitWidth = 439
     end
     object pnlResTable: TPanel
       Left = 1
       Top = 1
-      Width = 439
+      Width = 722
       Height = 41
       Align = alTop
       Caption = #1058#1072#1073#1083#1080#1094#1072' '#1088#1077#1079#1091#1083#1100#1090#1072#1090#1086#1074
@@ -219,11 +209,12 @@ object fmMain: TfmMain
       Font.Style = []
       ParentFont = False
       TabOrder = 1
-      ExplicitWidth = 480
+      ExplicitWidth = 439
     end
   end
   object odOpenFile: TOpenDialog
     Filter = 'Groovy file|*.groovy'
-    Left = 1072
+    Left = 312
+    Top = 8
   end
 end
