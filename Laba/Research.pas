@@ -65,7 +65,6 @@ Const
   LINE = '.*';
   plplminmin = '(\+\+)|(\-\-)';
 
-
   fiws = '\b(for|while|Фif|switch)\b';
   scanner = 'scanner.*;';
   regfor = '\bfor\b';
@@ -1250,42 +1249,55 @@ var
   Matches, Matches2: TMatchCollection;
   i: integer;
   LeftVariable: TVariable;
+  tmp: integer;
 begin
   _regexp.Create(onlyvarOPERANDEXP);
   Matches := _regexp.Matches(left);
-  LeftVariable := Variables[FindNumInVariables(Matches.Item[0].Value,
-    Variables)];
+  tmp := FindNumInVariables(Matches.Item[0].Value, Variables);
+  if tmp <> -1 then
+  begin
+    LeftVariable := Variables[tmp];
+  end;
   Matches2 := _regexp.Matches(right);
   for i := 0 to Matches2.Count - 1 do
   begin
     if Matches2.Item[i].Value <> LeftVariable.Name then
     begin
-      SwitchTagVar(Variables[FindNumInVariables(Matches2.Item[i].Value,
-        Variables)], 3);
-      SwitchTagVar(Variables[FindNumInVariables(Matches2.Item[i].Value,
-        Variables)], 1);
+      tmp := FindNumInVariables(Matches2.Item[i].Value, Variables);
+      if tmp <> -1 then
+      begin
+        SwitchTagVar(Variables[tmp], 3);
+        SwitchTagVar(Variables[tmp], 1);
+      end;
     end
     else
     begin
-      SwitchTagVar(Variables[FindNumInVariables(Matches2.Item[i].Value,
-        Variables)], 6);
-      SwitchTagVar(Variables[FindNumInVariables(Matches2.Item[i].Value,
-        Variables)], 3);
+      tmp := FindNumInVariables(Matches2.Item[i].Value, Variables);
+      if tmp <> -1 then
+      begin
+        SwitchTagVar(Variables[tmp], 6);
+        SwitchTagVar(Variables[tmp], 3);
+      end;
     end;
   end;
   for i := 0 to Matches.Count - 1 do
   begin
     if i = 0 then
     begin
-      SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-      Variables)], 6);
-      SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-      Variables)], 3);
+      tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
+      if tmp <> -1 then
+      begin
+        SwitchTagVar(Variables[tmp], 6);
+        SwitchTagVar(Variables[tmp], 3);
+      end;
     end
     else
     begin
-      SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-      Variables)], 2);
+      tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
+      if tmp <> -1 then
+      begin
+        SwitchTagVar(Variables[tmp], 2);
+      end;
     end;
 
   end;
@@ -1299,6 +1311,7 @@ var
   i: integer;
   str: string;
   leftstr, rightstr: string;
+  tmp: integer;
 begin
   _regexp.Create(onlyvarOPERANDEXP);
   // Если найдены операнды
@@ -1309,10 +1322,12 @@ begin
     if _regexp.IsMatch(s) then
     begin
       _regexp.Create(onlyvarOPERANDEXP);
-      SwitchTagVar(Variables[FindNumInVariables(_regexp.Matches(s)
-        .Item[0].Value, Variables)], 4);
-      SwitchTagVar(Variables[FindNumInVariables(_regexp.Matches(s)
-        .Item[0].Value, Variables)], 5);
+      tmp := FindNumInVariables(_regexp.Matches(s).Item[0].Value, Variables);
+      if tmp <> -1 then
+      begin
+        SwitchTagVar(Variables[tmp], 4);
+        SwitchTagVar(Variables[tmp], 5);
+      end;
     end
     else
     begin
@@ -1331,8 +1346,11 @@ begin
           // Погружаемся в условие у for
           for i := 0 to Matches.Count - 1 do
           begin
-            SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-              Variables)], 2);
+            tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
+            if tmp <> -1 then
+            begin
+              SwitchTagVar(Variables[tmp], 2);
+            end;
           end;
         end
         else
@@ -1345,8 +1363,11 @@ begin
             Matches := _regexp.Matches(s);
             for i := 1 to Matches.Count - 1 do
             begin
-              SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-                Variables)], 2);
+              tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
+              if tmp <> -1 then
+              begin
+                SwitchTagVar(Variables[tmp], 2);
+              end;
             end;
           end;
         end;
@@ -1365,14 +1386,16 @@ begin
           _regexp.Create(plplminmin);
           if _regexp.IsMatch(s) then
           begin
-          _regexp.Create(onlyvarOPERANDEXP);
+            _regexp.Create(onlyvarOPERANDEXP);
             Matches := _regexp.Matches(s);
             for i := 0 to Matches.Count - 1 do
             begin
-              SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-                Variables)], 6);
-              SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-                Variables)], 3);
+              tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
+              if tmp <> -1 then
+              begin
+                SwitchTagVar(Variables[tmp], 6);
+                SwitchTagVar(Variables[tmp], 3);
+              end;
             end;
           end
           else
@@ -1385,13 +1408,13 @@ begin
               Matches := _regexp.Matches(s);
               for i := 1 to Matches.Count - 1 do
               begin
-                SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-                  Variables)], 1);
-                SwitchTagVar(Variables[FindNumInVariables(Matches.Item[i].Value,
-                  Variables)], 3);
-                SwitchTagVar
-                  (Variables[FindNumInVariables(_regexp.Matches(s)
-                  .Item[i].Value, Variables)], 5);
+                tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
+                if tmp <> -1 then
+                begin
+                  SwitchTagVar(Variables[tmp], 1);
+                  SwitchTagVar(Variables[tmp], 3);
+                  SwitchTagVar(Variables[tmp], 5);
+                end;
               end;
             end;
           end;
