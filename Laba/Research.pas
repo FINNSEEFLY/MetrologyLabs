@@ -61,17 +61,20 @@ Const
   CREATESCAN = 'Scanner[^;]*;';
   DELSCAN = 'scanner[^;]*;';
   CHEPDELSCAN = 'scanner\.close\(\);';
-  onlyvarOPERANDEXP = { '\b[^() }{ [\]0-9]*\b' } '\b[a-zA-Z_][a-zA-Z0-9]*\b';
+  onlyvarOPERANDEXP = { '\b[^() }{ [\]0-9]*\b' } '\b[a-zA-Z_][a-zA-Z0-9_]*\b';
   LINE = '.*';
-  plplminmin = '(\+\+)|(\-\-)';
-
-  fiws = '\b(for|while|Фif|switch)\b';
+  plplminmin =
+    '(\b[a-zA-Z_][a-zA-Z0-9_]*\b\+\+)|(\b[a-zA-Z_][a-zA-Z0-9_]*\b\-\-)|\-\-(\b[a-zA-Z_][a-zA-Z0-9_]*\b)|\+\+(\b[a-zA-Z_][a-zA-Z0-9_]*\b)';
+  fiws = '\b(for|while|if|switch)\b';
   scanner = 'scanner.*;';
   regfor = '\bfor\b';
   infor = ';[^;]*;';
   regifswitchwhile = '\b(if|while|switch)\b';
   equally = '=';
   print = '\b(println|print)\b';
+  scannerfull = '.next(Int|Float|String|Byte|Short|Double|Char|Boolean)';
+  leftfor = '\([^;]*;';
+
   REGW1 = 'if';
   REGW2 = 'for';
   REGW3 = 'else';
@@ -1302,7 +1305,7 @@ end;
 Procedure LineCheckFullCHepin(const s: string; var Variables: TVariables);
 var
   _regexp: TRegEx;
-  Matches: TMatchCollection;
+  Matches, Matches2: TMatchCollection;
   i: integer;
   str: string;
   leftstr, rightstr: string;
@@ -1312,7 +1315,7 @@ begin
   // Если найдены операнды
   if _regexp.IsMatch(s) then
   begin
-    _regexp.Create('scanner');
+    _regexp.Create(scannerfull);
     // Найден ввод
     if _regexp.IsMatch(s) then
     begin
@@ -1347,6 +1350,13 @@ begin
               SwitchTagVar(Variables[tmp], 2);
             end;
           end;
+          _regexp.Create(leftfor);
+          str := _regexp.Matches(s).Item[0].Value;
+          if _regexp.IsMatch(s) then
+          begin
+            LineTo2Line(str, pos(equally, str), leftstr, rightstr);
+            LeftRightCheck(leftstr, rightstr, Variables);
+          end;
         end
         else
         begin
@@ -1356,7 +1366,7 @@ begin
           begin
             _regexp.Create(onlyvarOPERANDEXP);
             Matches := _regexp.Matches(s);
-            for i := 1 to Matches.Count - 1 do
+            for i := 0 to Matches.Count - 1 do
             begin
               tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
               if tmp <> -1 then
@@ -1378,7 +1388,8 @@ begin
         end
         else
         begin
-          _regexp.Create(plplminmin);
+          _regexp.Create(print);
+          // Найден println
           if _regexp.IsMatch(s) then
           begin
             _regexp.Create(onlyvarOPERANDEXP);
@@ -1388,35 +1399,31 @@ begin
               tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
               if tmp <> -1 then
               begin
-                SwitchTagVar(Variables[tmp], 6);
+                SwitchTagVar(Variables[tmp], 1);
                 SwitchTagVar(Variables[tmp], 3);
-              end;
-            end;
-          end
-          else
-          begin
-            _regexp.Create(print);
-            // Найден println
-            if _regexp.IsMatch(s) then
-            begin
-              _regexp.Create(onlyvarOPERANDEXP);
-              Matches := _regexp.Matches(s);
-              for i := 1 to Matches.Count - 1 do
-              begin
-                tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
-                if tmp <> -1 then
-                begin
-                  SwitchTagVar(Variables[tmp], 1);
-                  SwitchTagVar(Variables[tmp], 3);
-                  SwitchTagVar(Variables[tmp], 5);
-                end;
+                SwitchTagVar(Variables[tmp], 5);
               end;
             end;
           end;
         end;
       end;
-
     end;
+    _regexp.Create(plplminmin);
+    if _regexp.IsMatch(s) then
+    begin
+      Matches := _regexp.Matches(s);
+      _regexp.Create(onlyvarOPERANDEXP);
+      for i := 0 to Matches.Count - 1 do
+      begin
+        tmp := FindNumInVariables(_regexp.Matches(Matches[i].Value)
+          .Item[0].Value, Variables);
+        if tmp <> -1 then
+        begin
+          SwitchTagVar(Variables[tmp], 6);
+          SwitchTagVar(Variables[tmp], 3);
+        end;
+      end;
+    end
   end;
 end;
 
