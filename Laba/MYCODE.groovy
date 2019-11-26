@@ -10,7 +10,7 @@ int myfunction(int some) {
     return result;
 }
 
-static void main(String[] args) {
+static void main() {
     int x = 0;
     int y = 3;
     int n = 1;
@@ -22,9 +22,12 @@ static void main(String[] args) {
             for (int j = 3; j <= 15; j++) {
                 y -= j;
                 switch (i){
-                    case 1: y++; break;
-                    case 2: x++; break;
-                    default: x += y;
+                    case 1: 
+						y++; break;
+                    case 2: 
+						x++; break;
+                    default: 
+						x += y;
                 }
                 for (int k = 0; k<=i; k++) {
                     x -= 1;

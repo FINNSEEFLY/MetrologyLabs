@@ -4,7 +4,7 @@ Interface
 
 Uses
   Regularexpressions,
-  Math, vcl.dialogs;
+  Math, vcl.dialogs, SysUtils;
 
 Type
   TOperator = record
@@ -32,16 +32,24 @@ Type
     I_O: boolean;
   end;
 
+  TIdentifier = record
+    Name: string;
+    OldName: string;
+    lvl: integer;
+    TermEnd: boolean;
+  end;
+
   TOperators = array of TOperator;
   TOperands = array of TOperand;
   TVariables = array of TVariable;
+  TIdentifiers = array of TIdentifier;
 
 Const
   COMEXP = '(\/\*[\s\S]*?(.*)\*\/)|(\/\/.*)';
   OPERATOREXP =
   // '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|break|continue|switch|case|;|{|\[|\,|\.';
   // '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\+{1,2}|\-{1,2}|<{0,1}={1,2}|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|\+\=|\-\=|\*\=|\/\=|\%\=|\.\.|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\.';
-    '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|'
+    '([a-zA-Z]([a-zA-Z0-9_$]*\.?)+(?=\())|\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|'
     + '\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\(|\.';
   KEYWORDEXP =
     ('\b(def|double|int|else|float|byte|short|long|Scanner|char|boolean|string|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
@@ -74,6 +82,14 @@ Const
   print = '\b(println|print)\b';
   scannerfull = '.next(Int|Float|String|Byte|Short|Double|Char|Boolean)';
   leftfor = '\([^;]*;';
+  isfunction = '([a-zA-Z]([a-zA-Z0-9_$]*\.?)*)\(.*\)((?=\ )|(?=\;))';
+  infunction = '(\(.*\)((?=\ )|(?=\;)|(?=$)))';
+  swapleftfor =
+    '(def|double|int|float|byte|short|long|char|boolean|string|String)[^\;\=]*(\;|\=)';
+  typedef = '\b(def|double|int|float|byte|short|long|Scanner|char|boolean|string|String)\b(\[([0-9 ])*\])?[ ]';
+  someKey = '\b(def|double|int|else|float|byte|short|long|Scanner|char|boolean|string|void|static|register|String|const|if|switch|case|while|break|is|println|continu|default|new)\b';
+  definefunction =
+    '\b(def|double|int|float|byte|short|long|char|boolean|string|String)\b[ ]*([a-zA-Z]([a-zA-Z0-9_$]*\.?)*)\(.*\)((?=\ )|(?=\;))';
 
   REGW1 = 'if';
   REGW2 = 'for';
@@ -1100,6 +1116,206 @@ begin
 
 end;
 
+Procedure AddInID(var Identifiers: TIdentifiers; const id: string;
+  const lvl: integer);
+var
+  num: integer;
+  i: integer;
+  j: integer;
+  _regexp: TRegEx;
+  swap:boolean;
+begin
+  _regexp.Create(someKey);
+
+  if not _regexp.IsMatch(id) then
+  begin
+    swap:=false;
+    if length(Identifiers) <> 0 then
+    begin
+      for i := 0 to length(Identifiers) - 1 do
+      begin
+        if Identifiers[i].OldName = id then
+        begin
+          num := 0;
+          for j := i to length(Identifiers) - 1 do
+          begin
+            if Identifiers[j].OldName = id then
+              inc(num);
+          end;
+          SetLength(Identifiers, length(Identifiers) + 1);
+          Identifiers[length(Identifiers) - 1].Name := id + '_' + inttostr(num);
+          Identifiers[length(Identifiers) - 1].OldName := id;
+          Identifiers[length(Identifiers) - 1].lvl := lvl;
+          Identifiers[length(Identifiers) - 1].TermEnd := false;
+          swap:=true; break;
+        end;
+      end;
+      if swap=false then
+      begin
+        SetLength(Identifiers, length(Identifiers) + 1);
+          Identifiers[length(Identifiers) - 1].Name := id;
+          Identifiers[length(Identifiers) - 1].OldName := id;
+          Identifiers[length(Identifiers) - 1].lvl := lvl;
+          Identifiers[length(Identifiers) - 1].TermEnd := false;
+      end;
+    end
+    else
+    begin
+      SetLength(Identifiers, 1);
+      Identifiers[0].Name := id;
+      Identifiers[0].OldName := id;
+      Identifiers[0].lvl := lvl;
+      Identifiers[0].TermEnd := false;
+    end;
+  end;
+end;
+
+Procedure FixLVLS(var Identifiers: TIdentifiers; const lvl: integer);
+var
+  i: integer;
+begin
+  for i := 0 to length(Identifiers) - 1 do
+  begin
+    if Identifiers[i].lvl > lvl then
+    begin
+      Identifiers[i].TermEnd := true;
+    end;
+  end;
+end;
+
+Function FindID(const Identifiers: TIdentifiers; const lvl: integer;
+  const s: string): integer;
+var
+  i: integer;
+begin
+  Result := -1;
+  for i := length(Identifiers) - 1 downto 0 do
+  begin
+    if Identifiers[i].TermEnd = false then
+    begin
+      if Identifiers[i].OldName = s then
+      begin
+        Result := i;
+        break;
+      end;
+    end;
+  end;
+end;
+
+Procedure SwapInLine(var s: string; Const Identifiers: TIdentifiers;
+  const lvl: integer);
+var
+  _regexp, _regexp2: TRegEx;
+  Matches, Matches2: TMatchCollection;
+  i: integer;
+  tmp: integer;
+begin
+  _regexp.Create(onlyvarOPERANDEXP);
+  Matches := _regexp.Matches(s);
+  for i := 0 to Matches.Count - 1 do
+  begin
+    tmp := FindID(Identifiers, lvl, Matches.Item[i].Value);
+    if tmp <> -1 then
+    begin
+      _regexp2.Create(Matches.Item[i].Value);
+      s:=_regexp2.Replace(s, Identifiers[tmp].Name);
+    end;
+  end;
+
+end;
+
+Procedure SwapIdentifiers(var text: string);
+var
+  Identifiers: TIdentifiers;
+  _regexp: TRegEx;
+  Matches, Matches2, Matches3: TMatchCollection;
+  lvl: integer;
+  i, j: integer;
+  s: string;
+  str: string;
+  k: integer;
+  newtext:string;
+begin
+  lvl := 0;
+  newtext:='';
+  _regexp.Create(LINE);
+  Matches := _regexp.Matches(text);
+  for i := 0 to Matches.Count - 1 do
+  begin
+    s := Matches[i].Value;
+    _regexp.Create(regfor);
+    // for
+    if _regexp.IsMatch(s) then
+    begin
+      _regexp.Create(swapleftfor);
+      if _regexp.IsMatch(s) then
+      begin
+        str := _regexp.Matches(s).Item[0].Value;
+        _regexp.Create(onlyvarOPERANDEXP);
+        Matches2 := _regexp.Matches(str);
+        for j := 0 to Matches2.Count - 1 do
+        begin
+          AddInID(Identifiers, Matches2.Item[j].Value, lvl + 1);
+          SwapInLine(s, Identifiers, lvl);
+        end;
+
+      end;
+    end
+    else
+    begin
+      _regexp.Create(definefunction);
+      if _regexp.IsMatch(s) then
+      begin
+        str := _regexp.Matches(s).Item[0].Value;
+        _regexp.Create(infunction);
+        str := _regexp.Matches(str).Item[0].Value;
+        _regexp.Create(onlyvarOPERANDEXP);
+        Matches2 := _regexp.Matches(str);
+        for j := 0 to Matches2.Count - 1 do
+        begin
+          AddInID(Identifiers, Matches2.Item[j].Value, lvl+1);
+          SwapInLine(s, Identifiers, lvl);
+        end;
+      end
+      else
+      begin
+        _regexp.Create(typedef);
+        if _regexp.IsMatch(s) then
+        begin
+          _regexp.Create(onlyvarOPERANDEXP);
+          Matches2 := _regexp.Matches(s);
+          for j := 0 to Matches2.Count - 1 do
+          begin
+            AddInID(Identifiers, Matches2.Item[j].Value, lvl);
+          end;
+        end
+        else
+        begin
+          _regexp.Create(onlyvarOPERANDEXP);
+          if _regexp.IsMatch(s) then
+          begin
+            SwapInLine(s, Identifiers, lvl);
+          end;
+        end;
+      end;
+    end;
+    _regexp.Create('{');
+    if _regexp.IsMatch(s) then
+    begin
+      inc(lvl);
+    end;
+    _regexp.Create('}');
+    if _regexp.IsMatch(s) then
+    begin
+      dec(lvl);
+      FixLVLS(Identifiers, lvl);
+    end;
+    newtext:=newtext+#13#10+s;
+  end;
+  ShowMessage(newtext);
+  text:=newtext;
+end;
+
 Procedure MinusOneOPERANDS(var OPERANDS: TOperands);
 var
   i: integer;
@@ -1110,13 +1326,21 @@ end;
 
 Procedure spnAnalizeCode(var text: string; var OPERATORS: TOperators;
   var OPERANDS: TOperands);
+var
+  tmp: string;
 begin
   InitOperands(OPERANDS);
   InitOperators(OPERATORS);
   DelComments(text);
-  Delfunctiondef(text);
   Delscaner(text);
   spnDelStrings(text, OPERANDS);
+
+  { Место для свапа }
+  SwapIdentifiers(text);
+  tmp := text;
+
+  Delfunctiondef(text);
+
   // showmessage(text);
 
   DelKeywords(text);
@@ -1127,6 +1351,7 @@ begin
 
   varDelOperands(text, OPERANDS);
   // showmessage(text);
+  text := tmp;
 end;
 
 Procedure InitVariables(var OPERANDS: TOperands; var Variables: TVariables);
@@ -1310,6 +1535,7 @@ var
   str: string;
   leftstr, rightstr: string;
   tmp: integer;
+  stringMass: System.Tarray<System.String>;
 begin
   _regexp.Create(onlyvarOPERANDEXP);
   // Если найдены операнды
@@ -1404,6 +1630,29 @@ begin
                 SwitchTagVar(Variables[tmp], 5);
               end;
             end;
+          end
+          else
+          begin
+            _regexp.Create(isfunction);
+            if _regexp.IsMatch(s) then
+            begin
+              str := _regexp.Matches(s).Item[0].Value;
+              _regexp.Create(infunction);
+              str := _regexp.Matches(str).Item[0].Value;
+              _regexp.Create(onlyvarOPERANDEXP);
+              Matches := _regexp.Matches(str);
+              for i := 0 to Matches.Count - 1 do
+              begin
+                tmp := FindNumInVariables(Matches.Item[i].Value, Variables);
+                if tmp <> -1 then
+                begin
+                  SwitchTagVar(Variables[tmp], 1);
+                  SwitchTagVar(Variables[tmp], 3);
+                end;
+              end;
+
+            end;
+
           end;
         end;
       end;

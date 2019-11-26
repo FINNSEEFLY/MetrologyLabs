@@ -202,11 +202,11 @@ begin
         mmResults.Lines.Clear;
         mmResults.Lines.Add('Суммарный спен программы = ' + inttostr(SumSpen));
 
-        temp := '';
+        {temp := '';
         for i := 0 to mmCode.Lines.Count - 1 do
         begin
           temp := temp + mmCode.Lines.Strings[i] + #13#10;
-        end;
+        end;   }
         FullChepin(temp, OPERANDS, Variables);
         P := 0;
         M := 0;

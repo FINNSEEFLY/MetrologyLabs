@@ -181,7 +181,6 @@ object fmMain: TfmMain
     Height = 611
     Align = alClient
     TabOrder = 2
-    ExplicitWidth = 724
     object sgResults: TStringGrid
       Left = 1
       Top = 42
@@ -193,7 +192,6 @@ object fmMain: TfmMain
       RowCount = 1
       FixedRows = 0
       TabOrder = 0
-      ExplicitWidth = 722
     end
     object pnlResTable: TPanel
       Left = 1
@@ -209,7 +207,6 @@ object fmMain: TfmMain
       Font.Style = []
       ParentFont = False
       TabOrder = 1
-      ExplicitWidth = 722
     end
   end
   object odOpenFile: TOpenDialog
