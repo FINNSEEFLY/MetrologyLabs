@@ -4,7 +4,7 @@ object fmMain: TfmMain
   BorderStyle = bsSingle
   Caption = #1056#1072#1089#1095#1077#1090' '#1084#1077#1090#1088#1080#1082' '#1082#1086#1076#1072
   ClientHeight = 611
-  ClientWidth = 1550
+  ClientWidth = 1559
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -177,15 +177,15 @@ object fmMain: TfmMain
   object pnlresbox: TPanel
     Left = 826
     Top = 0
-    Width = 724
+    Width = 733
     Height = 611
     Align = alClient
     TabOrder = 2
-    ExplicitWidth = 441
+    ExplicitWidth = 724
     object sgResults: TStringGrid
       Left = 1
       Top = 42
-      Width = 722
+      Width = 731
       Height = 568
       Align = alClient
       ColCount = 4
@@ -193,12 +193,12 @@ object fmMain: TfmMain
       RowCount = 1
       FixedRows = 0
       TabOrder = 0
-      ExplicitWidth = 439
+      ExplicitWidth = 722
     end
     object pnlResTable: TPanel
       Left = 1
       Top = 1
-      Width = 722
+      Width = 731
       Height = 41
       Align = alTop
       Caption = #1058#1072#1073#1083#1080#1094#1072' '#1088#1077#1079#1091#1083#1100#1090#1072#1090#1086#1074
@@ -209,7 +209,7 @@ object fmMain: TfmMain
       Font.Style = []
       ParentFont = False
       TabOrder = 1
-      ExplicitWidth = 439
+      ExplicitWidth = 722
     end
   end
   object odOpenFile: TOpenDialog

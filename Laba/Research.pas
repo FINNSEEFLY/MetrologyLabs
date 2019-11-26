@@ -44,9 +44,9 @@ Const
     '([a-zA-Z]([a-zA-Z0-9_$]+\.?)+(?=\())|\?|\+\=|\-\=|\*\=|\*\*\=|\/\=|\%\=|\.\.|'
     + '\+{1,2}|\-{1,2}|<{0,1}={1,2}|new|\*{1,2}|\/|%|\/|if|=>|>{1,3}|<|>=|&{1,2}|\|{1,2}|\^|~|!{1}={0,1}|do|return|is|for|while|println|break|continue|switch|case|default|;|{|\[|\,|\(|\.';
   KEYWORDEXP =
-    ('\b(def|double|int|else|float|byte|short|long|char|boolean|string|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
+    ('\b(def|double|int|else|float|byte|short|long|Scanner|char|boolean|string|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
   KEYWORDEXPUPD =
-    ('\b(def|double|int|float|byte|short|long|char|boolean|string|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
+    ('\b(def|double|int|float|Scanner|byte|short|long|char|boolean|string|void|static|register|String|const|[\s\w]*\([\w\s,]*\)'')\b');
   STRINGEXP = '("[^"]*")|(''[^'']*'')';
   OPERANDEXP =
   // '(?<!\\)(([a-zA-Z0-9][a-zA-z0-9_$]*)+\.?)*(([a-zA-Z0-9][a-zA-z0-9_$]*)+?)+';
@@ -255,9 +255,6 @@ Procedure spnDelStrings(var text: string; OPERANDS: TOperands);
 var
   _regexp: TRegEx;
   temp: TMatchCollection;
-  i: integer;
-  j: integer;
-  flag: boolean;
 begin
   _regexp := TRegEx.Create(STRINGEXP);
   text := _regexp.Replace(text, ' ');
@@ -541,7 +538,6 @@ Function ReadOneLexeme(var text: string; var numofobj: integer;
   15 = sometxt
 }
 var
-  i: integer;
   fl: boolean;
   resstr: string;
   _regexp: TRegEx;
@@ -550,7 +546,6 @@ var
 begin
   fl := true;
   resstr := '';
-  i := 1;
   while (fl) and (nos <= length(text)) do
   begin
     resstr := resstr + text[nos];
