@@ -186,6 +186,7 @@ begin
         setlength(OPERATORS, 0);
         setlength(OPERANDS, 0);
         spnAnalizeCode(temp, OPERATORS, OPERANDS);
+        MinusOneOPERANDS(OPERANDS);
         sgResults.Cells[0, 0] := 'Идентификатор';
         sgResults.Cells[1, 0] := 'Спен';
         i := 0;

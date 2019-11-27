@@ -87,7 +87,7 @@ Const
   swapleftfor =
     '(def|double|int|float|byte|short|long|char|boolean|string|String)[^\;\=]*(\;|\=)';
   typedef = '\b(def|double|int|float|byte|short|long|Scanner|char|boolean|string|String)\b(\[([0-9 ])*\])?[ ]';
-  someKey = '\b(def|double|int|else|float|byte|short|long|Scanner|char|boolean|string|void|static|register|String|const|if|switch|case|while|break|is|println|continu|default|new)\b';
+  someKey = '\b(def|double|int|else|float|byte|short|long|Scanner|char|boolean|string|void|static|register|String|const|if|switch|case|while|break|is|println|continu|default|new|(next(Int|Float|String|Byte|Short|Double|Char|Boolean)))\b';
   definefunction =
     '\b(def|double|int|float|byte|short|long|char|boolean|string|String)\b[ ]*([a-zA-Z]([a-zA-Z0-9_$]*\.?)*)\(.*\)((?=\ )|(?=\;))';
 
@@ -140,6 +140,8 @@ Procedure spnAnalizeCode(var text: string; var OPERATORS: TOperators;
 
 Procedure FullChepin(var text: string; var OPERANDS: TOperands;
   var Result: TVariables);
+
+Procedure MinusOneOPERANDS(var OPERANDS: TOperands);
 
 Implementation
 
@@ -273,7 +275,6 @@ end;
 Procedure spnDelStrings(var text: string; OPERANDS: TOperands);
 var
   _regexp: TRegEx;
-  temp: TMatchCollection;
 begin
   _regexp := TRegEx.Create(STRINGEXP);
   text := _regexp.Replace(text, ' ');
@@ -1123,13 +1124,13 @@ var
   i: integer;
   j: integer;
   _regexp: TRegEx;
-  swap:boolean;
+  swap: boolean;
 begin
   _regexp.Create(someKey);
 
   if not _regexp.IsMatch(id) then
   begin
-    swap:=false;
+    swap := false;
     if length(Identifiers) <> 0 then
     begin
       for i := 0 to length(Identifiers) - 1 do
@@ -1147,16 +1148,35 @@ begin
           Identifiers[length(Identifiers) - 1].OldName := id;
           Identifiers[length(Identifiers) - 1].lvl := lvl;
           Identifiers[length(Identifiers) - 1].TermEnd := false;
-          swap:=true; break;
+          swap := true;
+          break;
+        end
+        else
+        begin
+          if (Identifiers[i].Name = id) and (Identifiers[i].OldName <> id) then
+          begin
+            num := 0;
+            for j := i to length(Identifiers) - 1 do
+            begin
+              SetLength(Identifiers, length(Identifiers) + 1);
+              Identifiers[length(Identifiers) - 1].Name := id + '_' +
+                inttostr(num);
+              Identifiers[length(Identifiers) - 1].OldName := id;
+              Identifiers[length(Identifiers) - 1].lvl := lvl;
+              Identifiers[length(Identifiers) - 1].TermEnd := false;
+              swap := true;
+              break;
+            end;
+          end;
         end;
       end;
-      if swap=false then
+      if swap = false then
       begin
         SetLength(Identifiers, length(Identifiers) + 1);
-          Identifiers[length(Identifiers) - 1].Name := id;
-          Identifiers[length(Identifiers) - 1].OldName := id;
-          Identifiers[length(Identifiers) - 1].lvl := lvl;
-          Identifiers[length(Identifiers) - 1].TermEnd := false;
+        Identifiers[length(Identifiers) - 1].Name := id;
+        Identifiers[length(Identifiers) - 1].OldName := id;
+        Identifiers[length(Identifiers) - 1].lvl := lvl;
+        Identifiers[length(Identifiers) - 1].TermEnd := false;
       end;
     end
     else
@@ -1206,7 +1226,7 @@ Procedure SwapInLine(var s: string; Const Identifiers: TIdentifiers;
   const lvl: integer);
 var
   _regexp, _regexp2: TRegEx;
-  Matches, Matches2: TMatchCollection;
+  Matches: TMatchCollection;
   i: integer;
   tmp: integer;
 begin
@@ -1217,8 +1237,8 @@ begin
     tmp := FindID(Identifiers, lvl, Matches.Item[i].Value);
     if tmp <> -1 then
     begin
-      _regexp2.Create(Matches.Item[i].Value);
-      s:=_regexp2.Replace(s, Identifiers[tmp].Name);
+      _regexp2.Create('\b'+Matches.Item[i].Value+'\b');
+      s := _regexp2.Replace(s, Identifiers[tmp].Name);
     end;
   end;
 
@@ -1228,16 +1248,15 @@ Procedure SwapIdentifiers(var text: string);
 var
   Identifiers: TIdentifiers;
   _regexp: TRegEx;
-  Matches, Matches2, Matches3: TMatchCollection;
+  Matches, Matches2: TMatchCollection;
   lvl: integer;
   i, j: integer;
   s: string;
   str: string;
-  k: integer;
-  newtext:string;
+  newtext: string;
 begin
   lvl := 0;
-  newtext:='';
+  newtext := '';
   _regexp.Create(LINE);
   Matches := _regexp.Matches(text);
   for i := 0 to Matches.Count - 1 do
@@ -1256,8 +1275,8 @@ begin
         for j := 0 to Matches2.Count - 1 do
         begin
           AddInID(Identifiers, Matches2.Item[j].Value, lvl + 1);
-          SwapInLine(s, Identifiers, lvl);
         end;
+        SwapInLine(s, Identifiers, lvl);
 
       end;
     end
@@ -1273,9 +1292,9 @@ begin
         Matches2 := _regexp.Matches(str);
         for j := 0 to Matches2.Count - 1 do
         begin
-          AddInID(Identifiers, Matches2.Item[j].Value, lvl+1);
-          SwapInLine(s, Identifiers, lvl);
+          AddInID(Identifiers, Matches2.Item[j].Value, lvl + 1);
         end;
+        SwapInLine(s, Identifiers, lvl);
       end
       else
       begin
@@ -1288,6 +1307,7 @@ begin
           begin
             AddInID(Identifiers, Matches2.Item[j].Value, lvl);
           end;
+          SwapInLine(s, Identifiers, lvl);
         end
         else
         begin
@@ -1310,10 +1330,10 @@ begin
       dec(lvl);
       FixLVLS(Identifiers, lvl);
     end;
-    newtext:=newtext+#13#10+s;
+    newtext := newtext + #13#10 + s;
   end;
-  ShowMessage(newtext);
-  text:=newtext;
+  //ShowMessage(newtext);
+  text := newtext;
 end;
 
 Procedure MinusOneOPERANDS(var OPERANDS: TOperands);
@@ -1332,14 +1352,15 @@ begin
   InitOperands(OPERANDS);
   InitOperators(OPERATORS);
   DelComments(text);
-  Delscaner(text);
+  CHEPDelscaner(text);
   spnDelStrings(text, OPERANDS);
 
   { Место для свапа }
   SwapIdentifiers(text);
   tmp := text;
 
-  Delfunctiondef(text);
+
+//  Delfunctiondef(text);
 
   // showmessage(text);
 
@@ -1530,12 +1551,11 @@ end;
 Procedure LineCheckFullCHepin(const s: string; var Variables: TVariables);
 var
   _regexp: TRegEx;
-  Matches, Matches2: TMatchCollection;
+  Matches: TMatchCollection;
   i: integer;
   str: string;
   leftstr, rightstr: string;
   tmp: integer;
-  stringMass: System.Tarray<System.String>;
 begin
   _regexp.Create(onlyvarOPERANDEXP);
   // Если найдены операнды
